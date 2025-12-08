@@ -1,5 +1,4 @@
-import mongoose from 'mongoose';
-import { IExample } from '../models/Example';
+import { Example } from '../models/example.schema';
 import * as exampleRepository from '../repositories/example.repository';
 import {
   CreateExampleInput,
@@ -13,7 +12,7 @@ import { error as errorMessages } from '../constants/messages';
  */
 export const createExample = async (
   exampleData: CreateExampleInput
-): Promise<mongoose.HydratedDocument<IExample>> => {
+): Promise<Example> => {
   return exampleRepository.create(exampleData);
 };
 
@@ -26,7 +25,7 @@ export const getExamples = async (
   category?: string,
   isDeleted?: boolean
 ): Promise<{
-  examples: mongoose.HydratedDocument<IExample>[];
+  examples: Example[];
   total: number;
 }> => {
   return exampleRepository.find(page, limit, category, isDeleted);
@@ -37,9 +36,10 @@ export const getExamples = async (
  */
 export const getExampleById = async (
   exampleId: string
-): Promise<mongoose.HydratedDocument<IExample>> => {
-  if (!mongoose.Types.ObjectId.isValid(exampleId)) {
-    throw new BadRequestError(errorMessages.INVALID_ID('Example'));
+): Promise<Example> => {
+  // Basic integer check for ID if using serial IDs
+  if (isNaN(Number(exampleId))) {
+     throw new BadRequestError(errorMessages.INVALID_ID('Example'));
   }
   const example = await exampleRepository.findById(exampleId);
   if (!example) {
@@ -54,8 +54,8 @@ export const getExampleById = async (
 export const updateExample = async (
   exampleId: string,
   updateData: UpdateExampleInput
-): Promise<mongoose.HydratedDocument<IExample>> => {
-  if (!mongoose.Types.ObjectId.isValid(exampleId)) {
+): Promise<Example> => {
+  if (isNaN(Number(exampleId))) {
     throw new BadRequestError(errorMessages.INVALID_ID('Example'));
   }
   const example = await exampleRepository.update(exampleId, updateData);
@@ -69,7 +69,7 @@ export const updateExample = async (
  * Delete example item (soft delete)
  */
 export const deleteExample = async (exampleId: string): Promise<boolean> => {
-  if (!mongoose.Types.ObjectId.isValid(exampleId)) {
+  if (isNaN(Number(exampleId))) {
     throw new BadRequestError(errorMessages.INVALID_ID('Example'));
   }
   const success = await exampleRepository.softDelete(exampleId);
@@ -84,7 +84,7 @@ export const deleteExample = async (exampleId: string): Promise<boolean> => {
  */
 export const getExamplesByCategory = async (
   category: string
-): Promise<mongoose.HydratedDocument<IExample>[]> => {
+): Promise<Example[]> => {
   return exampleRepository.findByCategory(category);
 };
 
@@ -93,6 +93,7 @@ export const getExamplesByCategory = async (
  */
 export const searchExamples = async (
   searchTerm: string
-): Promise<mongoose.HydratedDocument<IExample>[]> => {
+): Promise<Example[]> => {
   return exampleRepository.search(searchTerm);
 };
+

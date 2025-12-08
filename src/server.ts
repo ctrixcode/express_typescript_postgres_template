@@ -1,7 +1,7 @@
 import app from './app';
 import { logger } from './utils';
-import { dbInstance, appConfig } from './config';
-import mongoose from 'mongoose'; // Import mongoose for connection close
+import { appConfig } from './config';
+// import { client } from './db'; // Import client if you need to close it explicitly, though often not strictly necessary for simple apps
 
 const PORT = appConfig.port;
 
@@ -9,7 +9,9 @@ let server: any; // Declare server variable to hold the http.Server instance
 
 (async () => {
   try {
-    await dbInstance(); // Connect to MongoDB
+    // Database connection is handled lazily by Drizzle/Postgres.js,
+    // but you could add a check here if desired.
+    logger.info('Initializing server...');
 
     server = app.listen(PORT, () => {
       logger.info(`🚀 Server is running on port ${PORT}`);
@@ -39,14 +41,9 @@ const gracefulShutdown = async (signal: string) => {
     }
     logger.info('HTTP server closed.');
 
-    // Close MongoDB connection
-    try {
-      await mongoose.connection.close();
-      logger.info('MongoDB connection closed.');
-    } catch (dbErr) {
-      logger.error('Error closing MongoDB connection:', dbErr);
-      process.exit(1);
-    }
+    // Close Database connection if needed
+    // await client.end();
+    // logger.info('Database connection closed.');
 
     logger.info('Application gracefully shut down.');
     process.exit(0);
@@ -62,3 +59,4 @@ const gracefulShutdown = async (signal: string) => {
 // Listen for termination signals
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+

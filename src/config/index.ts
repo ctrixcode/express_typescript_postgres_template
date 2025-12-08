@@ -40,4 +40,4 @@ if (appConfig.encryptionKey.length !== 32) {
 }
 
 // Re-export other config modules for convenience
-export { default as dbInstance } from './db';
+
