@@ -1,7 +1,7 @@
 import request from 'supertest';
-import mongoose from 'mongoose';
 import app from '../../src/app';
-import Example from '../../src/models/Example';
+import { db } from '../../src/db';
+import { examples } from '../../src/models/example.schema';
 
 describe('Example Controller Integration', () => {
   let server: any;
@@ -13,12 +13,12 @@ describe('Example Controller Integration', () => {
   });
 
   afterAll(async () => {
-    await Example.deleteMany({});
+    await db.delete(examples);
     if (server && server.close) server.close();
   });
 
   afterEach(async () => {
-    await Example.deleteMany({});
+    await db.delete(examples);
   });
 
   describe('POST /api/examples', () => {
@@ -26,7 +26,7 @@ describe('Example Controller Integration', () => {
       const exampleData = {
         name: 'Test Item',
         description: 'A test item',
-        price: 99.99,
+        price: 99, // Changed to integer as per schema
         metadata: { category: 'electronics' },
       };
       const res = await request(server)
@@ -51,18 +51,20 @@ describe('Example Controller Integration', () => {
 
   describe('GET /api/examples', () => {
     it('should return a list of example items', async () => {
-      await Example.create({
-        name: 'Item 1',
-        description: 'First',
-        price: 10,
-        metadata: { category: 'books' },
-      });
-      await Example.create({
-        name: 'Item 2',
-        description: 'Second',
-        price: 20,
-        metadata: { category: 'electronics' },
-      });
+      await db.insert(examples).values([
+        {
+          name: 'Item 1',
+          description: 'First',
+          price: 10,
+          metadata: { category: 'books', priority: 'medium', createdAt: new Date().toISOString() },
+        },
+        {
+          name: 'Item 2',
+          description: 'Second',
+          price: 20,
+          metadata: { category: 'electronics', priority: 'medium', createdAt: new Date().toISOString() },
+        },
+      ]);
       const res = await request(server).get('/api/examples').expect(200);
       expect(res.body.success).toBe(true);
       expect(Array.isArray(res.body.data)).toBe(true);
@@ -70,3 +72,4 @@ describe('Example Controller Integration', () => {
     });
   });
 });
+

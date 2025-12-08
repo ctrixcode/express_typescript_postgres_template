@@ -1,28 +1,32 @@
 import dotenv from 'dotenv';
-import mongoose from 'mongoose';
 import app from '../src/app';
 import { IncomingMessage, Server, ServerResponse } from 'http';
+import { client } from '../src/db';
+
 dotenv.config();
+
 export let server: Server<
   typeof IncomingMessage,
   typeof ServerResponse
 > | null = null;
+
 beforeAll(async () => {
   try {
-    const uri = process.env.MONGODB_URI + '_test';
-    await mongoose.connect(uri, { dbName: 'db_name_test' });
+    // Database connection is handled lazily by Drizzle/Postgres.js
+    // We might want to ensure migrations are applied here if using a test DB
     server = app.listen(0); // random available port
   } catch (error) {
-    console.error('Error connecting to MongoDB:', error);
+    console.error('Error starting server:', error);
     throw error;
   }
 });
+
 afterAll(async () => {
-  if (mongoose.connection && mongoose.connection.db) {
-    await mongoose.connection.db.dropDatabase();
-  }
-  await mongoose.disconnect();
+  // Close database connection
+  await client.end();
+
   if (server) {
     server.close();
   }
 });
+
