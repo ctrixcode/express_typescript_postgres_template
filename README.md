@@ -1,231 +1,214 @@
-# Express.js + TypeScript + MongoDB Template
+# Express.js + TypeScript + PostgreSQL Template
 
-A modern, scalable Node.js API template built with Express.js, TypeScript, and MongoDB. This template provides a solid foundation for building RESTful APIs with proper project structure, type safety, and database integration.
+A modern, scalable, and production-ready Node.js API template designed for building robust RESTful APIs. This template provides a solid foundation with a clean project structure, full TypeScript support, a powerful ORM, and containerization with Docker.
 
-## 🚀 Features
+## ✨ Features
 
-- **TypeScript** - Full type safety and modern JavaScript features
-- **Express.js** - Fast, unopinionated web framework for Node.js
-- **MongoDB with Mongoose** - NoSQL database with ODM for data modeling
-- **Project Structure** - Well-organized folder structure following best practices
-- **Development Tools** - Hot reloading with nodemon and ts-node
-- **Testing Setup** - Pre-configured test directories for unit and integration tests
-- **Environment Configuration** - Dotenv support for environment variables
+- **Modern Tech Stack**: Built with Node.js, Express.js, TypeScript, and PostgreSQL.
+- **High-Performance ORM**: Integrates **Drizzle ORM** for type-safe, efficient database queries.
+- **Containerized**: Full **Docker** and **Docker Compose** setup for consistent development and production environments.
+- **API Documentation**: Automatic API documentation generation with **Swagger (OpenAPI)**.
+- **Structured Logging**: Centralized and environment-aware logging with **Winston**.
+- **Robust Security**: Includes `helmet` for securing HTTP headers, `express-rate-limit` to prevent brute-force attacks, and input sanitization.
+- **Code Quality**: Enforces code style and quality with **ESLint** and **Prettier**.
+- **Testing Ready**: Pre-configured with **Jest** for unit and integration testing.
+- **Database Migrations**: Simple database schema management and migrations powered by **Drizzle Kit**.
+- **CI/CD Ready**: Husky pre-commit hooks to ensure code quality before commits.
+
+## 🛠️ Tech Stack
+
+| Category          | Technology                                                              |
+| ----------------- | ----------------------------------------------------------------------- |
+| **Backend**       | [Node.js](https://nodejs.org/), [Express.js](https://expressjs.com/)     |
+| **Language**      | [TypeScript](https://www.typescriptlang.org/)                           |
+| **Database**      | [PostgreSQL](https://www.postgresql.org/)                               |
+| **ORM**           | [Drizzle ORM](https://orm.drizzle.team/)                                |
+| **API Docs**      | [Swagger](https://swagger.io/) / [OpenAPI](https://www.openapis.org/)   |
+| **Testing**       | [Jest](https://jestjs.io/), [Supertest](https://github.com/ladjs/supertest) |
+| **Containerization**| [Docker](https://www.docker.com/)                                       |
+| **Code Quality**  | [ESLint](https://eslint.org/), [Prettier](https://prettier.io/)          |
+| **Logging**       | [Winston](https://github.com/winstonjs/winston)                         |
 
 ## 📁 Project Structure
 
 ```
-express-ts-mongo/
+.
+├── bruno/              # Bruno API client collection
+├── drizzle/            # Drizzle ORM migration files
 ├── src/
-│   ├── app.ts                 # Express app configuration
-│   ├── server.ts              # Server entry point
-│   ├── config/                # Configuration files
-│   ├── constants/             # Application constants
-│   ├── controllers/           # Route controllers
-│   ├── middlewares/           # Custom middleware
-│   ├── models/                # Mongoose models
-│   ├── routes/                # API routes
-│   ├── services/              # Business logic
-│   ├── utils/                 # Utility functions
-│   └── validators/            # Request validation
-├── tests/
-│   ├── integration/           # Integration tests
-│   └── unit/                  # Unit tests
-├── dist/                      # Compiled JavaScript (generated)
-├── package.json
-├── tsconfig.json
-└── README.md
+│   ├── app.ts          # Express app configuration and middlewares
+│   ├── server.ts       # Server entry point
+│   ├── config/         # App configuration (Swagger, etc.)
+│   ├── constants/      # App-wide constants
+│   ├── controllers/    # Route handlers
+│   ├── db/             # Database connection setup
+│   ├── mappers/        # Data transformation logic
+│   ├── middlewares/    # Custom Express middlewares
+│   ├── models/         # Drizzle ORM schemas
+│   ├── repositories/   # Database query logic
+│   ├── routes/         # API route definitions
+│   ├── schemas/        # Zod validation schemas
+│   ├── services/       # Business logic
+│   ├── types/          # Custom TypeScript types
+│   └── utils/          # Utility functions and classes
+├── tests/              # Jest tests (integration, unit)
+├── .env.example        # Example environment variables
+├── docker-compose.yml  # Docker Compose configuration
+├── Dockerfile          # Docker configuration for the app
+└── package.json
 ```
 
-## 🛠️ Prerequisites
+## 🚀 Getting Started
 
-- **Node.js** (v16 or higher)
-- **MongoDB** (local installation or MongoDB Atlas)
+### Prerequisites
 
-## 📦 Installation
+- [Node.js](https://nodejs.org/en/download/) (v20.x or higher)
+- [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/)
+- [NPM](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) (comes with Node.js)
 
-1. **Clone the repository**
-   ```bash
-   git clone <your-repo-url>
-   cd express-ts-mongo
-   ```
+### 1. Clone the Repository
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Set up environment variables**
-   ```bash
-   cp .env.example .env
-   ```
-   
-   Edit `.env` file with your configuration:
-   ```env
-   PORT=3000
-   MONGODB_URI=mongodb://localhost:27017/your-database
-   NODE_ENV=development
-   ```
-
-4. **Start MongoDB** (if using local installation)
-   ```bash
-   # macOS with Homebrew
-   brew services start mongodb-community
-   
-   # Ubuntu/Debian
-   sudo systemctl start mongod
-   
-   # Or use Docker
-   docker run -d -p 27017:27017 --name mongodb mongo:latest
-   ```
-
-## 🚀 Usage
-
-### Development
 ```bash
-# Start development server with hot reload
-npm run dev
+git clone https://github.com/your-username/your-repo-name.git
+cd your-repo-name
 ```
 
-### Production
+### 2. Set Up Environment Variables
+
+Create a `.env` file by copying the example file:
+
 ```bash
-# Build the project
-npm run build
-
-# Start production server
-npm start
+cp .env.example .env
 ```
 
-### Testing
-```bash
-# Run tests (when implemented)
-npm test
-```
+Update the `.env` file with your desired settings. The default values are configured to work with the provided Docker Compose setup.
 
-## 🔧 Configuration
-
-### TypeScript Configuration
-The project uses a strict TypeScript configuration (`tsconfig.json`) with:
-- ES2016 target
-- CommonJS modules
-- Strict type checking
-- Source maps for debugging
-- Root directory: `./src`
-- Output directory: `./dist`
-
-### Package Scripts
-- `dev` - Start development server with nodemon and ts-node
-- `build` - Compile TypeScript to JavaScript
-- `start` - Run the compiled JavaScript in production
-- `test` - Run tests (placeholder)
-
-## 📚 Dependencies
-
-### Production Dependencies
-- **express** (^5.1.0) - Web framework
-- **mongoose** (^8.16.0) - MongoDB ODM
-- **dotenv** (^16.5.0) - Environment variable management
-
-### Development Dependencies
-- **typescript** (^5.8.3) - TypeScript compiler
-- **ts-node** (^10.9.2) - TypeScript execution engine
-- **nodemon** (^3.1.10) - Development server with auto-restart
-- **@types/express** (^5.0.3) - Express type definitions
-- **@types/mongoose** (^5.11.97) - Mongoose type definitions
-- **@types/node** (^24.0.3) - Node.js type definitions
-
-## 🏗️ Project Setup
-
-The template follows a standard MVC pattern:
-
-- **Models** (`src/models/`) - Mongoose schemas and models
-- **Controllers** (`src/controllers/`) - Route handlers and business logic
-- **Routes** (`src/routes/`) - API endpoint definitions
-- **Middleware** (`src/middlewares/`) - Custom Express middleware
-- **Services** (`src/services/`) - Reusable business logic
-- **Utils** (`src/utils/`) - Helper functions and utilities
-- **Validators** (`src/validators/`) - Request validation schemas
-
-## 🧪 Testing
-
-The project includes a testing structure with:
-- `tests/unit/` - For unit tests
-- `tests/integration/` - For integration tests
-
-To implement testing, consider adding:
-- **Jest** or **Mocha** for test framework
-- **Supertest** for API testing
-- **@types/jest** for TypeScript support
-
-## 📝 Environment Variables
-
-Create a `.env` file in the root directory:
 ```env
-PORT=3000
-MONGODB_URI=mongodb://localhost:27017/your-database
+# Application Port
+PORT=4000
+
+# PostgreSQL Connection URL
+# For local development, change this to your local Postgres instance
+DATABASE_URL="postgresql://user:password@localhost:5432/app_db"
+
+# Node Environment
 NODE_ENV=development
-JWT_SECRET=your-jwt-secret
 ```
 
-## 🔒 Security Considerations
+### 3. Installation and Running the App
 
-- Use environment variables for sensitive data
-- Implement proper authentication and authorization
-- Validate all user inputs
-- Use HTTPS in production
-- Implement rate limiting
-- Add CORS configuration as needed
+You can run this project using Docker (recommended for ease of use) or by setting up a local environment.
 
-## 📈 Deployment
+#### Option A: Docker (Recommended)
 
-### Docker (Recommended)
-Create a `Dockerfile`:
+This is the simplest way to get started. It automatically sets up the Express API and a PostgreSQL database container.
+
+1.  **Build and run the containers:**
+
+    ```bash
+    docker-compose up --build -d
+    ```
+
+2.  **Run database migrations:**
+
+    This command applies the Drizzle ORM schemas to the database.
+
+    ```bash
+    docker-compose exec api npm run db:push
+    ```
+
+The API will be available at `http://localhost:4000`.
+
+#### Option B: Local Development
+
+If you prefer to run the application without Docker, you'll need a local PostgreSQL instance.
+
+1.  **Install dependencies:**
+
+    ```bash
+    npm install
+    ```
+
+2.  **Set up a local PostgreSQL database.**
+
+3.  **Update `DATABASE_URL` in your `.env` file** to point to your local database instance.
+
+4.  **Run database migrations:**
+
+    ```bash
+    npm run db:push
+    ```
+
+5.  **Start the development server:**
+
+    ```bash
+    npm run dev
+    ```
+
+The API will be available at `http://localhost:4000`.
+
+## 📖 API Reference
+
+An interactive Swagger UI is available to explore and test the API endpoints. Once the application is running, access it at:
+
+**`http://localhost:4000/api-docs`**
+
+Key endpoints include:
+- `GET /api/healthz`: Health check for the service.
+- `GET /api/examples`: Fetch a list of examples.
+- `POST /api/examples`: Create a new example.
+- ...and other CRUD operations.
+
+## ⚙️ Available Scripts
+
+| Script             | Description                                                 |
+| ------------------ | ----------------------------------------------------------- |
+| `npm start`        | Starts the production server (requires `npm run build`).    |
+| `npm run dev`      | Starts the development server with hot-reloading.           |
+| `npm run build`    | Compiles TypeScript to JavaScript for production.           |
+| `npm test`         | Runs tests using Jest.                                      |
+| `npm run lint`     | Lints the codebase using ESLint.                            |
+| `npm run lint:fix` | Automatically fixes linting issues.                         |
+| `npm run format`   | Formats the code using Prettier.                            |
+
+### Database Scripts
+
+| Script              | Description                                                 |
+| ------------------- | ----------------------------------------------------------- |
+| `npm run db:generate` | Generates a new SQL migration file based on schema changes. |
+| `npm run db:migrate`  | Applies all pending migrations to the database.             |
+| `npm run db:push`     | Pushes schema changes directly to the database (for dev).   |
+| `npm run db:studio`   | Opens the Drizzle Studio to browse your database.           |
+
+## 🚢 Deployment
+
+For production, it's recommended to use a multi-stage Docker build to create a smaller, more secure image. This `Dockerfile` separates build-time dependencies from the final runtime image.
+
 ```dockerfile
-FROM node:18-alpine
+# 1. Build Stage
+FROM node:20-slim AS builder
 WORKDIR /app
 COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+
+# 2. Production Stage
+FROM node:20-slim AS production
+WORKDIR /app
+COPY package*.json ./
+# Install only production dependencies
 RUN npm ci --only=production
-COPY dist ./dist
-EXPOSE 3000
+# Copy built assets from the builder stage
+COPY --from=builder /app/dist ./dist
+EXPOSE 4000
 CMD ["npm", "start"]
 ```
 
-### Traditional Deployment
-1. Build the project: `npm run build`
-2. Copy `dist/`, `package.json`, and `package-lock.json` to server
-3. Install production dependencies: `npm ci --only=production`
-4. Start the server: `npm start`
-
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+Contributions are welcome! Please see the `CONTRIBUTING.md` file for guidelines on how to get started.
 
 ## 📄 License
 
-This project is licensed under the ISC License.
-
-## 🆘 Support
-
-If you encounter any issues or have questions:
-1. Check the existing issues
-2. Create a new issue with detailed information
-3. Provide steps to reproduce the problem
-
-## 🔄 Updates
-
-Keep your dependencies updated:
-```bash
-# Check for outdated packages
-pnpm outdated
-
-# Update dependencies
-pnpm update
-```
-
----
-
-**Happy Coding! 🎉** 
+This project is licensed under the **ISC License**. See the `LICENSE` file for details.
