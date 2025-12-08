@@ -8,8 +8,8 @@ const config = {
   port: process.env.PORT || 4000,
   logLevel: process.env.LOG_LEVEL || 'info',
 
-  mongo: {
-    uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/test',
+  database: {
+    url: process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/express_ts_db',
   },
 
   jwt: {
