@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { logger } from '../utils';
-import exampleRoutes from './example.routes';
+import exampleRoutes from '../modules/example/example.routes';
 
 const router = Router();
 

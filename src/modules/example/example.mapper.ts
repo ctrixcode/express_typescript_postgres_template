@@ -1,8 +1,5 @@
-import { Example } from '../models/example.schema';
-import {
-  CreateExampleInput,
-  UpdateExampleInput,
-} from '../schemas/example.schema';
+import { Example } from '../../models/example.schema';
+import { CreateExampleInput, UpdateExampleInput } from './example.schema';
 
 /**
  * Converts an Example Drizzle object to a plain JavaScript object (DTO)
@@ -31,4 +28,3 @@ export const toExampleDto = (example: Example) => {
 // toExample and toExampleUpdate are less relevant with Drizzle's direct insert/update
 // but keeping them if logic separation is desired, though they need to return Drizzle-friendly objects.
 // For now, removing them as the repository handles the mapping directly in the new implementation.
-

@@ -1,10 +1,7 @@
 import { Router } from 'express';
-import * as exampleController from '../controllers/example.controller';
-import { validate } from '../middlewares/validate';
-import {
-  createExampleSchema,
-  updateExampleSchema,
-} from '../schemas/example.schema';
+import * as exampleController from './example.controller';
+import { validate } from '../../middlewares/validate';
+import { createExampleSchema, updateExampleSchema } from './example.schema';
 
 const router = Router();
 

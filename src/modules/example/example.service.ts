@@ -1,11 +1,8 @@
-import { Example } from '../models/example.schema';
-import * as exampleRepository from '../repositories/example.repository';
-import {
-  CreateExampleInput,
-  UpdateExampleInput,
-} from '../schemas/example.schema';
-import { NotFoundError, BadRequestError } from '../utils/ApiError';
-import { error as errorMessages } from '../constants/messages';
+import { Example } from '../../models/example.schema';
+import * as exampleRepository from './example.repository';
+import { CreateExampleInput, UpdateExampleInput } from './example.schema';
+import { NotFoundError, BadRequestError } from '../../utils/ApiError';
+import { error as errorMessages } from '../../constants/messages';
 
 /**
  * Create a new example item
@@ -34,12 +31,10 @@ export const getExamples = async (
 /**
  * Get example item by ID
  */
-export const getExampleById = async (
-  exampleId: string
-): Promise<Example> => {
+export const getExampleById = async (exampleId: string): Promise<Example> => {
   // Basic integer check for ID if using serial IDs
   if (isNaN(Number(exampleId))) {
-     throw new BadRequestError(errorMessages.INVALID_ID('Example'));
+    throw new BadRequestError(errorMessages.INVALID_ID('Example'));
   }
   const example = await exampleRepository.findById(exampleId);
   if (!example) {
@@ -96,4 +91,3 @@ export const searchExamples = async (
 ): Promise<Example[]> => {
   return exampleRepository.search(searchTerm);
 };
-

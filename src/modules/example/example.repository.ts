@@ -1,11 +1,8 @@
 import { eq, and, desc, sql, like, or } from 'drizzle-orm';
-import { db } from '../db';
-import { examples, NewExample } from '../models/example.schema';
-import { logger } from '../utils';
-import {
-  CreateExampleInput,
-  UpdateExampleInput,
-} from '../schemas/example.schema';
+import { db } from '../../db';
+import { examples, NewExample } from '../../models/example.schema';
+import { logger } from '../../utils';
+import { CreateExampleInput, UpdateExampleInput } from './example.schema';
 
 export interface ExampleFilter {
   'metadata.category'?: string;
@@ -32,7 +29,10 @@ export const create = async (
       },
     };
 
-    const [savedExample] = await db.insert(examples).values(newExample).returning();
+    const [savedExample] = await db
+      .insert(examples)
+      .values(newExample)
+      .returning();
 
     logger.info('Example item created successfully in repository', {
       exampleId: savedExample.id,
@@ -58,10 +58,11 @@ export const find = async (
 
     const conditions = [];
     if (category) {
-        // JSONB query for category
-        conditions.push(sql`${examples.metadata}->>'category' = ${category}`);
+      // JSONB query for category
+      conditions.push(sql`${examples.metadata}->>'category' = ${category}`);
     }
-    if (isDeleted !== undefined) conditions.push(eq(examples.isDeleted, isDeleted));
+    if (isDeleted !== undefined)
+      conditions.push(eq(examples.isDeleted, isDeleted));
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
@@ -132,24 +133,24 @@ export const update = async (
     // For now, assuming we map fields directly.
     const updateValues: Partial<NewExample> = {};
     if (updateData.name) updateValues.name = updateData.name;
-    if (updateData.description) updateValues.description = updateData.description;
+    if (updateData.description)
+      updateValues.description = updateData.description;
     if (updateData.price) updateValues.price = updateData.price;
     if (updateData.tags) updateValues.tags = updateData.tags;
     // Metadata update is tricky with partials in JSONB, might need to fetch and merge or use specific JSONB operators.
     // Simulating a merge for metadata if provided
     if (updateData.metadata) {
-         // This is a simplification. In a real app, you might want to merge with existing metadata
-         // or use jsonb_set. Drizzle support for jsonb_set is via sql operator.
-         // For this template, we'll assume full metadata replacement or careful handling.
-         // Let's just set it for now if provided.
-         updateValues.metadata = {
-            category: updateData.metadata.category || 'other', // Default or handle undefined
-            priority: updateData.metadata.priority || 'medium',
-            createdAt: new Date().toISOString(), // Or keep original?
-         };
+      // This is a simplification. In a real app, you might want to merge with existing metadata
+      // or use jsonb_set. Drizzle support for jsonb_set is via sql operator.
+      // For this template, we'll assume full metadata replacement or careful handling.
+      // Let's just set it for now if provided.
+      updateValues.metadata = {
+        category: updateData.metadata.category || 'other', // Default or handle undefined
+        priority: updateData.metadata.priority || 'medium',
+        createdAt: new Date().toISOString(), // Or keep original?
+      };
     }
     updateValues.updatedAt = new Date();
-
 
     const [example] = await db
       .update(examples)
@@ -204,15 +205,17 @@ export const softDelete = async (exampleId: string): Promise<boolean> => {
 
 export const findByCategory = async (
   category: string
-): Promise<typeof examples.$inferSelect[]> => {
+): Promise<(typeof examples.$inferSelect)[]> => {
   try {
     const resultExamples = await db
       .select()
       .from(examples)
-      .where(and(
+      .where(
+        and(
           sql`${examples.metadata}->>'category' = ${category}`,
           eq(examples.isDeleted, false)
-      ))
+        )
+      )
       .orderBy(desc(examples.createdAt));
 
     logger.info('Examples retrieved by category from repository', {
@@ -231,18 +234,20 @@ export const findByCategory = async (
 
 export const search = async (
   searchTerm: string
-): Promise<typeof examples.$inferSelect[]> => {
+): Promise<(typeof examples.$inferSelect)[]> => {
   try {
     const resultExamples = await db
       .select()
       .from(examples)
-      .where(and(
+      .where(
+        and(
           or(
-              like(examples.name, `%${searchTerm}%`),
-              like(examples.description, `%${searchTerm}%`)
+            like(examples.name, `%${searchTerm}%`),
+            like(examples.description, `%${searchTerm}%`)
           ),
           eq(examples.isDeleted, false)
-      ))
+        )
+      )
       .orderBy(desc(examples.createdAt));
 
     logger.info('Examples searched successfully in repository', {
@@ -255,4 +260,3 @@ export const search = async (
     throw error;
   }
 };
-

@@ -1,13 +1,10 @@
 import { Request, Response } from 'express';
-import * as exampleService from '../services/example.service';
-import { toExampleDto } from '../mappers/example.mapper';
-import {
-  CreateExampleInput,
-  UpdateExampleInput,
-} from '../schemas/example.schema';
-import { asyncHandler } from '../utils/asyncHandler';
-import { success as successMessages } from '../constants/messages';
-import { sendSuccessResponse } from '../utils/responseHandler';
+import * as exampleService from './example.service';
+import { toExampleDto } from './example.mapper';
+import { CreateExampleInput, UpdateExampleInput } from './example.schema';
+import { asyncHandler } from '../../utils/asyncHandler';
+import { success as successMessages } from '../../constants/messages';
+import { sendSuccessResponse } from '../../utils/responseHandler';
 
 /**
  * Create a new example item
