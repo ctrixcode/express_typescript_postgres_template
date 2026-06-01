@@ -1,11 +1,11 @@
 import jwt, { SignOptions } from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
-import { db } from '../database';
-import { authSessionTokens } from '../models/authSessionToken.schema';
+import { db } from '@/database';
+import { authSessionTokens } from '@/models/authSessionToken.schema';
 import { UnauthorizedError } from './ApiError';
-import { error as errorMessages } from '../constants/messages';
+import { error as errorMessages } from '@/constants/messages';
 import { logger } from './logger';
-import { appConfig } from '../config';
+import { appConfig } from '@/config';
 
 export interface TokenPayload {
   userId: string;

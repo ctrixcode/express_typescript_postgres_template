@@ -1,7 +1,7 @@
 import request from 'supertest';
-import app from '../../src/app';
-import { db } from '../../src/database';
-import { examples } from '../../src/models/example.schema';
+import app from '@/app';
+import { db } from '@/database';
+import { examples } from '@/models/example.schema';
 
 describe('Example Controller Integration', () => {
   let server: any;

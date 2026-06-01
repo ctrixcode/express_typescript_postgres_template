@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
-import app from '../src/app';
+import app from '@/app';
 import { IncomingMessage, Server, ServerResponse } from 'http';
-import { client } from '../src/database';
+import { client } from '@/database';
 
 dotenv.config();
 

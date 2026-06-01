@@ -1,8 +1,8 @@
-import { Example } from '../../models/example.schema';
+import { Example } from '@/models/example.schema';
 import * as exampleRepository from './example.repository';
 import { CreateExampleInput, UpdateExampleInput } from './example.schema';
-import { NotFoundError, BadRequestError } from '../../utils/ApiError';
-import { error as errorMessages } from '../../constants/messages';
+import { NotFoundError, BadRequestError } from '@/utils/ApiError';
+import { error as errorMessages } from '@/constants/messages';
 
 /**
  * Create a new example item
