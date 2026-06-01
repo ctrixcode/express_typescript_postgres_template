@@ -1,0 +1,20 @@
+info:
+  name: Create Example
+  type: http
+  seq: 1
+http:
+  method: POST
+  url: "{{baseURL}}/api/examples"
+  body:
+    type: json
+    data: |-
+      {
+        "name": "New Example from Bruno",
+        "description": "This is a complete example with all required fields.",
+        "price": 49,
+        "tags": ["bruno", "test-data"],
+        "metadata": {
+          "category": "electronics",
+          "priority": "high"
+        }
+      }

@@ -1,0 +1,14 @@
+info:
+  name: Update Example
+  type: http
+  seq: 6
+http:
+  method: PUT
+  url: "{{baseURL}}/api/examples/1"
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Updated Example Name",
+        "price": 59
+      }

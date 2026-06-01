@@ -1,0 +1,7 @@
+name: local
+variables:
+  - name: baseURL
+    value: http://localhost:4000
+    enabled: true
+    secret: false
+    type: text
