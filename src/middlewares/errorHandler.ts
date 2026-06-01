@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { logger, ApiError, NotFoundError, sendErrorResponse } from '../utils';
+import { logger } from '../utils';
+import { ApiError, NotFoundError, sendErrorResponse } from '../helpers';
 import { error as errorMessages } from '../constants/messages';
 import { appConfig } from '../config';
 

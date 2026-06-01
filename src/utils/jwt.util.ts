@@ -2,7 +2,7 @@ import jwt, { SignOptions } from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '@/database';
 import { authSessionTokens } from '@/database/models/authSessionToken.model';
-import { UnauthorizedError } from './ApiError.util';
+import { UnauthorizedError } from '@/helpers';
 import { error as errorMessages } from '@/constants/messages';
 import { logger } from './logger.util';
 import { appConfig } from '@/config';

@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import * as exampleService from './example.service';
 import { toExampleDto } from './example.mapper';
 import { CreateExampleInput, UpdateExampleInput } from './example.schema';
-import { asyncHandler, sendSuccessResponse } from '@/utils';
+import { asyncHandler, sendSuccessResponse } from '@/helpers';
 import { success as successMessages } from '@/constants/messages';
 
 /**
