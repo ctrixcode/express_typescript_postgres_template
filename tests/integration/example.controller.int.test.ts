@@ -1,7 +1,7 @@
 import request from 'supertest';
 import app from '@/app';
 import { db } from '@/database';
-import { examples } from '@/models/example.schema';
+import { examples } from '@/database/models/example.model';
 import { Server } from 'http';
 
 describe('Example Controller Integration', () => {

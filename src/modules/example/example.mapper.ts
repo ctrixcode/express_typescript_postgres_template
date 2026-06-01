@@ -1,4 +1,4 @@
-import { Example } from '@/models/example.schema';
+import { Example } from '@/database/models/example.model';
 import { CreateExampleInput, UpdateExampleInput } from './example.schema';
 
 /**

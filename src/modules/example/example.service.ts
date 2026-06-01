@@ -1,4 +1,4 @@
-import { Example } from '@/models/example.schema';
+import { Example } from '@/database/models/example.model';
 import * as exampleRepository from './example.repository';
 import { CreateExampleInput, UpdateExampleInput } from './example.schema';
 import { NotFoundError, BadRequestError } from '@/utils/ApiError';

@@ -1,6 +1,6 @@
 import { eq, and, desc, sql, like, or } from 'drizzle-orm';
 import { db } from '@/database';
-import { examples, NewExample } from '@/models/example.schema';
+import { examples, NewExample } from '@/database/models/example.model';
 import { logger } from '@/utils';
 import { CreateExampleInput, UpdateExampleInput } from './example.schema';
 

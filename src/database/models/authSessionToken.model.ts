@@ -1,4 +1,11 @@
-import { pgTable, serial, text, boolean, timestamp, integer } from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  serial,
+  text,
+  boolean,
+  timestamp,
+  integer,
+} from 'drizzle-orm/pg-core';
 
 export const authSessionTokens = pgTable('auth_session_tokens', {
   id: serial('id').primaryKey(),
