@@ -20,9 +20,9 @@ export interface TokenPayload {
  */
 export const generateAccessToken = (payload: TokenPayload): string => {
   const options: SignOptions = {
-    expiresIn: appConfig.jwt.accessTokenExpiresIn as SignOptions['expiresIn'],
+    expiresIn: appConfig.JWT.ACCESS_TOKEN_TIME as SignOptions['expiresIn'],
   };
-  return jwt.sign(payload, appConfig.jwt.secret, options);
+  return jwt.sign(payload, appConfig.JWT.ACCESS_TOKEN_SECRET, options);
 };
 
 /**
@@ -37,20 +37,21 @@ export const generateRefreshToken = (
 ): { refreshToken: string; jti: string } => {
   const jti = uuidv4();
   const options: SignOptions = {
-    expiresIn: appConfig.jwt.refreshTokenExpiresIn as SignOptions['expiresIn'],
+    expiresIn: appConfig.JWT.REFRESH_TOKEN_TIME as SignOptions['expiresIn'],
     jwtid: jti,
   };
-  const refreshToken = jwt.sign(payload, appConfig.jwt.secret, options);
+  const refreshToken = jwt.sign(
+    payload,
+    appConfig.JWT.ACCESS_TOKEN_SECRET,
+    options
+  );
 
   // Calculate expiration date for database storage
   let expiresInSeconds: number;
-  if (typeof appConfig.jwt.refreshTokenExpiresIn === 'string') {
+  if (typeof appConfig.JWT.REFRESH_TOKEN_TIME === 'string') {
     // A simple parser for formats like "7d", "59m", etc.
-    const value = parseInt(
-      appConfig.jwt.refreshTokenExpiresIn.slice(0, -1),
-      10
-    );
-    const unit = appConfig.jwt.refreshTokenExpiresIn.slice(-1);
+    const value = parseInt(appConfig.JWT.REFRESH_TOKEN_TIME.slice(0, -1), 10);
+    const unit = appConfig.JWT.REFRESH_TOKEN_TIME.slice(-1);
     switch (unit) {
       case 's':
         expiresInSeconds = value;
@@ -68,7 +69,7 @@ export const generateRefreshToken = (
         expiresInSeconds = 7 * 24 * 60 * 60; // Default to 7 days
     }
   } else {
-    expiresInSeconds = appConfig.jwt.refreshTokenExpiresIn;
+    expiresInSeconds = appConfig.JWT.REFRESH_TOKEN_TIME;
   }
 
   const expiresAt = new Date(Date.now() + expiresInSeconds * 1000);
@@ -98,7 +99,7 @@ export const generateRefreshToken = (
  */
 export const verifyToken = (token: string): TokenPayload => {
   try {
-    return jwt.verify(token, appConfig.jwt.secret) as TokenPayload;
+    return jwt.verify(token, appConfig.JWT.ACCESS_TOKEN_SECRET) as TokenPayload;
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {
       throw new UnauthorizedError(errorMessages.AUTH.EXPIRED_TOKEN);

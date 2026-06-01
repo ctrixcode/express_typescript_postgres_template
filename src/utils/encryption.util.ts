@@ -2,7 +2,7 @@ import * as crypto from 'crypto';
 import { appConfig } from '../config';
 
 const ALGORITHM = 'aes-256-cbc';
-const ENCRYPTION_KEY = appConfig.encryptionKey; // Get key from centralized config
+const ENCRYPTION_KEY = appConfig.APP.ENCRYPTION_KEY; // Get key from centralized config
 
 export function encrypt(
   text: string,

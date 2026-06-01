@@ -3,7 +3,7 @@ import { logger } from './utils';
 import { appConfig } from './config';
 // import { client } from './database'; // Import client if you need to close it explicitly, though often not strictly necessary for simple apps
 
-const PORT = appConfig.port;
+const PORT = appConfig.APP.PORT;
 
 let server: any; // Declare server variable to hold the http.Server instance
 
@@ -21,7 +21,7 @@ let server: any; // Declare server variable to hold the http.Server instance
       logger.info(
         `📚 API docs available at: http://localhost:${PORT}/api-docs`
       );
-      logger.info(`🌍 Environment: ${appConfig.env}`);
+      logger.info(`🌍 Environment: ${appConfig.APP.NODE_ENV}`);
     });
   } catch (error) {
     logger.error('Failed to start server:', error);

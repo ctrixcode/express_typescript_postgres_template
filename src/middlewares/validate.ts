@@ -19,7 +19,7 @@ export const validate =
           message: `${issue.path.join('.')} is ${issue.message.toLowerCase()}`,
         }));
         // Only log Zod errors if not in test environment
-        if (appConfig.env !== 'test') {
+        if (appConfig.APP.NODE_ENV !== 'test') {
           logger.error('Zod validation error', { errors: errorMessages });
         }
         return res.status(400).json({ success: false, errors: errorMessages });

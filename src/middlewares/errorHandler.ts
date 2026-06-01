@@ -41,7 +41,7 @@ export const errorHandler = (
   const { statusCode, message, isOperational, stack } = error as ApiError;
 
   // For non-operational errors in production, we don't want to leak details.
-  if (!isOperational && appConfig.env === 'production') {
+  if (!isOperational && appConfig.APP.NODE_ENV === 'production') {
     sendErrorResponse(res, 500, errorMessages.INTERNAL_SERVER_ERROR);
     return;
   }
@@ -56,7 +56,8 @@ export const errorHandler = (
   }
 
   // Include stack trace in development for easier debugging
-  const errorStack = appConfig.env === 'development' ? stack : undefined;
+  const errorStack =
+    appConfig.APP.NODE_ENV === 'development' ? stack : undefined;
 
   sendErrorResponse(res, statusCode, message, undefined, undefined, errorStack);
 };
