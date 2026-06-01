@@ -1,6 +1,6 @@
 import request from 'supertest';
 import app from '../../src/app';
-import { db } from '../../src/db';
+import { db } from '../../src/database';
 import { examples } from '../../src/models/example.schema';
 
 describe('Example Controller Integration', () => {
@@ -56,13 +56,21 @@ describe('Example Controller Integration', () => {
           name: 'Item 1',
           description: 'First',
           price: 10,
-          metadata: { category: 'books', priority: 'medium', createdAt: new Date().toISOString() },
+          metadata: {
+            category: 'books',
+            priority: 'medium',
+            createdAt: new Date().toISOString(),
+          },
         },
         {
           name: 'Item 2',
           description: 'Second',
           price: 20,
-          metadata: { category: 'electronics', priority: 'medium', createdAt: new Date().toISOString() },
+          metadata: {
+            category: 'electronics',
+            priority: 'medium',
+            createdAt: new Date().toISOString(),
+          },
         },
       ]);
       const res = await request(server).get('/api/examples').expect(200);
@@ -72,4 +80,3 @@ describe('Example Controller Integration', () => {
     });
   });
 });
-

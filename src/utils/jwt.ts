@@ -1,6 +1,6 @@
 import jwt, { SignOptions } from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
-import { db } from '../db';
+import { db } from '../database';
 import { authSessionTokens } from '../models/authSessionToken.schema';
 import { UnauthorizedError } from './ApiError';
 import { error as errorMessages } from '../constants/messages';
@@ -74,16 +74,18 @@ export const generateRefreshToken = (
   const expiresAt = new Date(Date.now() + expiresInSeconds * 1000);
 
   // Save refresh token metadata to database
-  db.insert(authSessionTokens).values({
-    userId: payload.userId,
-    jti: jti,
-    expiresAt: expiresAt,
-    isUsed: false,
-    userAgent: userAgent,
-  }).catch(err => {
-    logger.error('Error saving AuthSessionToken:', err);
-    // Non-blocking call: Don't prevent token generation even if DB save fails.
-  });
+  db.insert(authSessionTokens)
+    .values({
+      userId: payload.userId,
+      jti: jti,
+      expiresAt: expiresAt,
+      isUsed: false,
+      userAgent: userAgent,
+    })
+    .catch(err => {
+      logger.error('Error saving AuthSessionToken:', err);
+      // Non-blocking call: Don't prevent token generation even if DB save fails.
+    });
 
   return { refreshToken, jti };
 };
@@ -115,5 +117,3 @@ export const verifyToken = (token: string): TokenPayload => {
 export const decodeToken = (token: string): TokenPayload | null => {
   return jwt.decode(token) as TokenPayload | null;
 };
-
-

@@ -1,7 +1,7 @@
 import app from './app';
 import { logger } from './utils';
 import { appConfig } from './config';
-// import { client } from './db'; // Import client if you need to close it explicitly, though often not strictly necessary for simple apps
+// import { client } from './database'; // Import client if you need to close it explicitly, though often not strictly necessary for simple apps
 
 const PORT = appConfig.port;
 
@@ -59,4 +59,3 @@ const gracefulShutdown = async (signal: string) => {
 // Listen for termination signals
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
-

@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import app from '../src/app';
 import { IncomingMessage, Server, ServerResponse } from 'http';
-import { client } from '../src/db';
+import { client } from '../src/database';
 
 dotenv.config();
 
@@ -29,4 +29,3 @@ afterAll(async () => {
     server.close();
   }
 });
-
