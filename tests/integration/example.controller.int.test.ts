@@ -2,14 +2,16 @@ import request from 'supertest';
 import app from '@/app';
 import { db } from '@/database';
 import { examples } from '@/models/example.schema';
+import { Server } from 'http';
 
 describe('Example Controller Integration', () => {
-  let server: any;
+  let server: Server;
 
   beforeAll(async () => {
     // Use the same server as in setup.ts
-    // @ts-ignore
-    server = global.server || app.listen(0);
+    server =
+      (global as typeof globalThis & { server?: Server }).server ||
+      app.listen(0);
   });
 
   afterAll(async () => {
