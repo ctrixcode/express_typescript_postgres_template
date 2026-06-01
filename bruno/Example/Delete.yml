@@ -5,7 +5,7 @@ info:
 
 http:
   method: DELETE
-  url: "{{baseURL}}/api/examples/1"
+  url: "{{baseURL}}/api/examples/uuid"
 
 settings:
   encodeUrl: true
