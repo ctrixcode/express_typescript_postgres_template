@@ -1,10 +1,8 @@
 import postgres from 'postgres';
-import dotenv from 'dotenv';
-
-dotenv.config();
+import { appConfig } from '@/config';
 
 async function createDatabase() {
-  const connectionString = process.env.DATABASE_URL;
+  const connectionString = appConfig.DB.URL;
   if (!connectionString) {
     console.error('DATABASE_URL is not defined in environment variables.');
     process.exit(1);

@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { logger } from '@/utils';
+import { appConfig } from '@/config';
 import exampleRoutes from '@/modules/example/example.routes';
 
 const router = Router();
@@ -37,7 +38,7 @@ router.get('/healthz', (_, res) => {
     status: 'ok',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    environment: process.env.NODE_ENV || 'development',
+    environment: appConfig.APP.NODE_ENV,
   });
 });
 

@@ -1,5 +1,6 @@
 import winston from 'winston';
 import path from 'path';
+import { appConfig } from '@/config';
 
 const levels = {
   error: 0,
@@ -20,7 +21,7 @@ const colors = {
 winston.addColors(colors);
 
 const level = () => {
-  const env = process.env.NODE_ENV || 'development';
+  const env = appConfig.APP.NODE_ENV;
   const isDevelopment = env === 'development';
   return isDevelopment ? 'debug' : 'warn';
 };
