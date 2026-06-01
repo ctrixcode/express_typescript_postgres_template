@@ -1,7 +1,7 @@
 opencollection: 1.0.0
 
 info:
-  name: express_typescript_postgres_template
+  name: Express Postgres Template
 config:
   proxy:
     inherit: true
@@ -24,3 +24,7 @@ extensions:
     ignore:
       - node_modules
       - .git
+    presets:
+      request:
+        type: http
+        url: "{{baseURL}}/"

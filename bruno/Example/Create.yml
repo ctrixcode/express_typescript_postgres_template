@@ -1,7 +1,8 @@
 info:
-  name: Create Example
+  name: "Create "
   type: http
   seq: 1
+
 http:
   method: POST
   url: "{{baseURL}}/api/examples"
@@ -18,3 +19,9 @@ http:
           "priority": "high"
         }
       }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

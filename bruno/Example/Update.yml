@@ -1,7 +1,8 @@
 info:
-  name: Update Example
+  name: "Update "
   type: http
   seq: 6
+
 http:
   method: PUT
   url: "{{baseURL}}/api/examples/1"
@@ -12,3 +13,9 @@ http:
         "name": "Updated Example Name",
         "price": 59
       }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

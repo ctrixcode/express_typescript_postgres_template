@@ -1,7 +1,0 @@
-info:
-  name: Delete Example
-  type: http
-  seq: 7
-http:
-  method: DELETE
-  url: "{{baseURL}}/api/examples/1"

@@ -1,4 +1,6 @@
 info:
-  name: examples
+  name: Example
   type: folder
   seq: 3
+
+request: {}
