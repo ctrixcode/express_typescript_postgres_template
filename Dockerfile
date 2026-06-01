@@ -15,7 +15,8 @@ RUN npm install
 COPY . .
 
 # Expose the port the app runs on
-EXPOSE 4000
+ARG PORT=4000
+EXPOSE ${PORT}
 
 # The command to run the application in development mode with live-reloading
 CMD ["npm", "run", "dev"]

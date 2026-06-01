@@ -6,13 +6,14 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - PORT=${PORT}
     ports:
-      - '4000:4000'
+      - '${PORT}:${PORT}'
     env_file:
       - ./.env
     environment:
-      # Override the DATABASE_URL from the .env file to use the Docker service name
-      - DATABASE_URL=postgresql://user:password@db:5432/app_db
+      - DB_HOST=db
     volumes:
       - .:/app
       # Mount a volume to prevent node_modules from being overwritten by the host directory
@@ -29,17 +30,17 @@ services:
   db:
     image: postgres:16-alpine
     ports:
-      - '5432:5432'
+      - '${DB_PORT}:${DB_PORT}'
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: app_db
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:
       - app-network
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U user -d app_db']
+      test: ['CMD-SHELL', 'pg_isready -U $${DB_USERNAME} -d $${DB_NAME}']
       interval: 10s
       timeout: 5s
       retries: 5
