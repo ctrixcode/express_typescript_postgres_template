@@ -2,16 +2,8 @@ import postgres from 'postgres';
 import { appConfig } from '@/config';
 
 async function createDatabase() {
-  const username = appConfig.DB.USER;
-  const password = appConfig.DB.PASSWORD;
-  const host = appConfig.DB.HOST;
-  const port = appConfig.DB.PORT;
   const dbName = appConfig.DB.NAME;
-
-  // Connect to the default 'postgres' system database
-  const defaultUrl = `postgres://${username}:${password}@${host}:${port}/postgres`;
-
-  const sql = postgres(defaultUrl);
+  const sql = postgres(appConfig.DB.SYSTEM_URL);
 
   try {
     const databases = await sql<{ datname: string }[]>`

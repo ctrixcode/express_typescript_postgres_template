@@ -25,6 +25,7 @@ const config = {
     PORT: process.env.DB_PORT || '5432',
     NAME: process.env.DB_NAME || 'express_ts_db',
     URL: `postgres://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`,
+    SYSTEM_URL: `postgres://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/postgres`,
   },
 };
 

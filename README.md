@@ -87,9 +87,12 @@ Update the `.env` file with your desired settings. The default values are config
 # Application Port
 PORT=4000
 
-# PostgreSQL Connection URL
-# For local development, change this to your local Postgres instance
-DATABASE_URL="postgresql://user:password@localhost:5432/app_db"
+# PostgreSQL Database Configuration
+DB_USERNAME=postgres
+DB_PASSWORD=password
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=app_db
 
 # Node Environment
 NODE_ENV=development
@@ -131,7 +134,7 @@ If you prefer to run the application without Docker, you'll need a local Postgre
 
 2.  **Set up a local PostgreSQL database.**
 
-3.  **Update `DATABASE_URL` in your `.env` file** to point to your local database instance.
+3.  **Update the database configuration variables in your `.env` file** to point to your local database instance.
 
 4.  **Run database migrations:**
 
