@@ -1,8 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { logger } from '../utils';
-import ApiError, { NotFoundError } from '../utils/ApiError';
+import { logger, ApiError, NotFoundError, sendErrorResponse } from '../utils';
 import { error as errorMessages } from '../constants/messages';
-import { sendErrorResponse } from '../utils/responseHandler';
 import { appConfig } from '../config';
 
 // 404 handler - using a specific error class
