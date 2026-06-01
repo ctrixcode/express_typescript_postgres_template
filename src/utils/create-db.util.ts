@@ -2,27 +2,14 @@ import postgres from 'postgres';
 import { appConfig } from '@/config';
 
 async function createDatabase() {
-  const connectionString = appConfig.DB.URL;
-  if (!connectionString) {
-    console.error('DATABASE_URL is not defined in environment variables.');
-    process.exit(1);
-  }
-
-  // Parse connection details
-  const matches = connectionString.match(
-    /postgres:\/\/([^:]+):([^@]*)@([^:]+):(\d+)\/(.+)/
-  );
-  if (!matches) {
-    console.error('Invalid DATABASE_URL format.');
-    process.exit(1);
-  }
-
-  const [, username, password, host, port, dbName] = matches;
+  const username = appConfig.DB.USER;
+  const password = appConfig.DB.PASSWORD;
+  const host = appConfig.DB.HOST;
+  const port = appConfig.DB.PORT;
+  const dbName = appConfig.DB.NAME;
 
   // Connect to the default 'postgres' system database
-  const defaultUrl = password
-    ? `postgres://${username}:${password}@${host}:${port}/postgres`
-    : `postgres://${username}@${host}:${port}/postgres`;
+  const defaultUrl = `postgres://${username}:${password}@${host}:${port}/postgres`;
 
   const sql = postgres(defaultUrl);
 

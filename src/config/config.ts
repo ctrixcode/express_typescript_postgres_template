@@ -19,9 +19,12 @@ const config = {
     REFRESH_TOKEN_TIME: process.env.JWT_REFRESH_TOKEN_EXPIRES_IN || '7d',
   },
   DB: {
-    URL:
-      process.env.DATABASE_URL ||
-      'postgres://postgres:postgres@localhost:5432/express_ts_db',
+    USER: process.env.DB_USERNAME || 'postgres',
+    PASSWORD: process.env.DB_PASSWORD || '',
+    HOST: process.env.DB_HOST || 'localhost',
+    PORT: process.env.DB_PORT || '5432',
+    NAME: process.env.DB_NAME || 'express_ts_db',
+    URL: `postgres://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`,
   },
 };
 
