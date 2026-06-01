@@ -67,9 +67,7 @@
         "auth_session_tokens_jti_unique": {
           "name": "auth_session_tokens_jti_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "jti"
-          ]
+          "columns": ["jti"]
         }
       },
       "policies": {},
