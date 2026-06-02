@@ -1,7 +1,11 @@
 import { Request, Response } from 'express';
 import * as exampleService from './example.service';
 import { toExampleDto } from './example.mapper';
-import { CreateExampleInput, UpdateExampleInput } from './example.schema';
+import {
+  CreateExampleInput,
+  UpdateExampleInput,
+  GetExamplesQueryInput,
+} from './example.schema';
 import { asyncHandler, sendSuccessResponse } from '@/helpers';
 import { success as successMessages } from '@/constants/messages';
 
@@ -30,13 +34,8 @@ export const createExample = asyncHandler(
  */
 export const getExamples = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
-    const category = req.query.category as string;
-    const isDeleted =
-      req.query.isDeleted !== undefined
-        ? req.query.isDeleted === 'true'
-        : undefined;
+    const { page, limit, category, isDeleted } =
+      req.query as unknown as GetExamplesQueryInput;
 
     const result = await exampleService.getExamples(
       page,

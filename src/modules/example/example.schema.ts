@@ -92,3 +92,25 @@ export const updateExampleSchema = z.object({
 
 export type CreateExampleInput = z.infer<typeof createExampleSchema>['body'];
 export type UpdateExampleInput = z.infer<typeof updateExampleSchema>['body'];
+
+export const getExamplesSchema = z.object({
+  query: z.object({
+    page: z
+      .string()
+      .optional()
+      .transform(val => (val ? parseInt(val, 10) : 1)),
+    limit: z
+      .string()
+      .optional()
+      .transform(val => (val ? parseInt(val, 10) : 10)),
+    category: z.string().optional(),
+    isDeleted: z
+      .enum(['true', 'false'])
+      .optional()
+      .transform(val =>
+        val === 'true' ? true : val === 'false' ? false : undefined
+      ),
+  }),
+});
+
+export type GetExamplesQueryInput = z.infer<typeof getExamplesSchema>['query'];

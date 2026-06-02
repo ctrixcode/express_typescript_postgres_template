@@ -1,7 +1,11 @@
 import { Router } from 'express';
 import * as exampleController from './example.controller';
 import { validate } from '@/middlewares/validate';
-import { createExampleSchema, updateExampleSchema } from './example.schema';
+import {
+  createExampleSchema,
+  updateExampleSchema,
+  getExamplesSchema,
+} from './example.schema';
 
 const router = Router();
 
@@ -71,7 +75,7 @@ router.post(
  *       500:
  *         description: Some server error
  */
-router.get('/', exampleController.getExamples);
+router.get('/', validate(getExamplesSchema), exampleController.getExamples);
 
 /**
  * @swagger
