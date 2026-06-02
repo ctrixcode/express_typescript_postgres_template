@@ -21,13 +21,14 @@ Key details of the database setup:
 
 Below is a breakdown of the Drizzle and database scripts available in `package.json`:
 
-| Command               | Under-the-hood Command                                           | Purpose / Description                                                                                                                                                         |
-| :-------------------- | :--------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `npm run db:create`   | `ts-node -r tsconfig-paths/register src/utils/create-db.util.ts` | Connects to PostgreSQL using database administrative credentials (`DB.SYSTEM_URL`) and creates the application database if it doesn't already exist.                          |
-| `npm run db:generate` | `drizzle-kit generate`                                           | Compiles schema definitions from `src/database/models/*.model.ts` and generates corresponding SQL migration scripts in `src/database/migration/`.                             |
-| `npm run db:migrate`  | `drizzle-kit migrate`                                            | Applies any pending migration scripts from the `src/database/migration/` directory onto the target database (`DB.URL`).                                                       |
-| `npm run db:push`     | `drizzle-kit push`                                               | Directly synchronization of your TypeScript model files to your database schema _without_ generating or running migration files. **Use only during rapid local prototyping.** |
-| `npm run db:studio`   | `drizzle-kit studio`                                             | Launches a local database GUI server. You can view, add, delete, and edit database records directly in your browser.                                                          |
+| Command                  | Under-the-hood Command                                           | Purpose / Description                                                                                                                                                         |
+| :----------------------- | :--------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run db:create`      | `ts-node -r tsconfig-paths/register src/utils/create-db.util.ts` | Connects to PostgreSQL using database administrative credentials (`DB.SYSTEM_URL`) and creates the application database if it doesn't already exist.                          |
+| `npm run db:generate`    | `drizzle-kit generate`                                           | Compiles schema definitions from `src/database/models/*.model.ts` and generates corresponding SQL migration scripts in `src/database/migration/`.                             |
+| `npm run db:migrate`     | `drizzle-kit migrate`                                            | Applies any pending migration scripts from the `src/database/migration/` directory onto the target database (`DB.URL`).                                                       |
+| `npm run db:gen:migrate` | `npm run db:generate && npm run db:migrate`                      | A combination script that first compiles schema definitions to generate SQL migration scripts, then applies those pending migrations to the database.                         |
+| `npm run db:push`        | `drizzle-kit push`                                               | Directly synchronization of your TypeScript model files to your database schema _without_ generating or running migration files. **Use only during rapid local prototyping.** |
+| `npm run db:studio`      | `drizzle-kit studio`                                             | Launches a local database GUI server. You can view, add, delete, and edit database records directly in your browser.                                                          |
 
 ---
 
