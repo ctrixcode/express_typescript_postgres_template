@@ -1,5 +1,6 @@
 import winston from 'winston';
 import path from 'path';
+import DailyRotateFile from 'winston-daily-rotate-file';
 import { appConfig } from '@/config';
 
 const levels = {
@@ -38,8 +39,12 @@ const transports = [
   }),
 
   // Error log file
-  new winston.transports.File({
-    filename: path.join('logs', 'error.log'),
+  new DailyRotateFile({
+    filename: path.join('logs', 'error-%DATE%.log'),
+    datePattern: 'YYYY-MM-DD',
+    zippedArchive: true,
+    maxSize: '20m',
+    maxFiles: '14d',
     level: 'error',
     format: winston.format.combine(
       winston.format.timestamp(),
@@ -48,8 +53,12 @@ const transports = [
   }),
 
   // Combined log file
-  new winston.transports.File({
-    filename: path.join('logs', 'combined.log'),
+  new DailyRotateFile({
+    filename: path.join('logs', 'combined-%DATE%.log'),
+    datePattern: 'YYYY-MM-DD',
+    zippedArchive: true,
+    maxSize: '20m',
+    maxFiles: '14d',
     format: winston.format.combine(
       winston.format.timestamp(),
       winston.format.json()
