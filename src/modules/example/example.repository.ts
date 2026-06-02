@@ -13,10 +13,6 @@ export const create = async (
   exampleData: CreateExampleInput
 ): Promise<typeof examples.$inferSelect> => {
   try {
-    logger.info('Creating new example item in repository', {
-      name: exampleData.name,
-    });
-
     const newExample: NewExample = {
       name: exampleData.name,
       description: exampleData.description,
@@ -34,9 +30,6 @@ export const create = async (
       .values(newExample)
       .returning();
 
-    logger.info('Example item created successfully in repository', {
-      exampleId: savedExample.id,
-    });
     return savedExample;
   } catch (error) {
     logger.error('Error creating example item in repository:', error);
@@ -82,11 +75,6 @@ export const find = async (
 
     const total = Number(totalResult[0]?.count || 0);
 
-    logger.info('Example items retrieved successfully from repository', {
-      count: resultExamples.length,
-      page,
-      limit,
-    });
     return { examples: resultExamples, total };
   } catch (error) {
     logger.error('Error retrieving example items from repository:', error);
@@ -107,13 +95,9 @@ export const findById = async (
       .where(eq(examples.id, id));
 
     if (!example) {
-      logger.warn('Example item not found in repository', { exampleId });
       return null;
     }
 
-    logger.info('Example item retrieved successfully from repository', {
-      exampleId,
-    });
     return example;
   } catch (error) {
     logger.error('Error retrieving example item from repository:', error);
@@ -159,15 +143,9 @@ export const update = async (
       .returning();
 
     if (!example) {
-      logger.warn('Example item not found for update in repository', {
-        exampleId,
-      });
       return null;
     }
 
-    logger.info('Example item updated successfully in repository', {
-      exampleId,
-    });
     return example;
   } catch (error) {
     logger.error('Error updating example item in repository:', error);
@@ -187,15 +165,9 @@ export const softDelete = async (exampleId: string): Promise<boolean> => {
       .returning();
 
     if (!example) {
-      logger.warn('Example item not found for deletion in repository', {
-        exampleId,
-      });
       return false;
     }
 
-    logger.info('Example item deleted successfully in repository', {
-      exampleId,
-    });
     return true;
   } catch (error) {
     logger.error('Error deleting example item in repository:', error);
@@ -218,10 +190,6 @@ export const findByCategory = async (
       )
       .orderBy(desc(examples.createdAt));
 
-    logger.info('Examples retrieved by category from repository', {
-      category,
-      count: resultExamples.length,
-    });
     return resultExamples;
   } catch (error) {
     logger.error(
@@ -250,10 +218,6 @@ export const search = async (
       )
       .orderBy(desc(examples.createdAt));
 
-    logger.info('Examples searched successfully in repository', {
-      searchTerm,
-      count: resultExamples.length,
-    });
     return resultExamples;
   } catch (error) {
     logger.error('Error searching examples in repository:', error);
