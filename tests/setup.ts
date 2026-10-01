@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import { beforeAll, afterAll } from '@jest/globals';
 import app from '@/app';
 import { IncomingMessage, Server, ServerResponse } from 'http';
 import { client } from '@/database';

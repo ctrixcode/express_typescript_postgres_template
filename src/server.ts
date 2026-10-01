@@ -1,3 +1,4 @@
+import { Server } from 'http';
 import app from './app';
 import { logger } from './utils';
 import { appConfig } from './config';
@@ -5,7 +6,7 @@ import { appConfig } from './config';
 
 const PORT = appConfig.APP.PORT;
 
-let server: any; // Declare server variable to hold the http.Server instance
+let server: Server; // Declare server variable to hold the http.Server instance
 
 (async () => {
   try {
@@ -16,7 +17,7 @@ let server: any; // Declare server variable to hold the http.Server instance
     server = app.listen(PORT, () => {
       logger.info(`🚀 Server is running on port ${PORT}`);
       logger.info(
-        `📊 Health check available at: http://localhost:${PORT}/healthz`
+        `📊 Health check available at: http://localhost:${PORT}/api/healthz`
       );
       logger.info(
         `📚 API docs available at: http://localhost:${PORT}/api-docs`
@@ -34,7 +35,7 @@ const gracefulShutdown = async (signal: string) => {
   logger.info(`Received ${signal}. Initiating graceful shutdown...`);
 
   // Close the HTTP server
-  server.close(async (err: any) => {
+  server.close(async (err?: Error) => {
     if (err) {
       logger.error('Error closing HTTP server:', err);
       process.exit(1);

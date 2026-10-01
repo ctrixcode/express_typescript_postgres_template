@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import * as exampleController from './example.controller';
 import { validate } from '@/middlewares/validate';
+import { authenticateToken } from '@/middlewares/auth';
 import {
   createExampleSchema,
   updateExampleSchema,
@@ -8,6 +9,9 @@ import {
 } from './example.schema';
 
 const router = Router();
+
+// Protect all /examples endpoints with JWT Bearer authentication
+router.use(authenticateToken);
 
 /**
  * @swagger
@@ -22,6 +26,8 @@ const router = Router();
  *   post:
  *     summary: Create a new example
  *     tags: [Examples]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -37,6 +43,8 @@ const router = Router();
  *               $ref: '#/components/schemas/Example'
  *       400:
  *         description: Bad request
+ *       401:
+ *         description: Unauthorized
  *       500:
  *         description: Some server error
  */
@@ -52,6 +60,8 @@ router.post(
  *   get:
  *     summary: Returns the list of all the examples
  *     tags: [Examples]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: page
@@ -72,6 +82,8 @@ router.post(
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/Example'
+ *       401:
+ *         description: Unauthorized
  *       500:
  *         description: Some server error
  */
@@ -83,6 +95,8 @@ router.get('/', validate(getExamplesSchema), exampleController.getExamples);
  *   get:
  *     summary: Get the example by id
  *     tags: [Examples]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -97,6 +111,8 @@ router.get('/', validate(getExamplesSchema), exampleController.getExamples);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Example'
+ *       401:
+ *         description: Unauthorized
  *       404:
  *         description: The example was not found
  *       500:
@@ -110,6 +126,8 @@ router.get('/:id', exampleController.getExampleById);
  *  put:
  *    summary: Update the example by the id
  *    tags: [Examples]
+ *    security:
+ *       - bearerAuth: []
  *    parameters:
  *      - in: path
  *        name: id
@@ -130,6 +148,8 @@ router.get('/:id', exampleController.getExampleById);
  *          application/json:
  *            schema:
  *              $ref: '#/components/schemas/Example'
+ *      401:
+ *        description: Unauthorized
  *      404:
  *        description: The example was not found
  *      400:
@@ -149,6 +169,8 @@ router.put(
  *   delete:
  *     summary: Remove the example by id
  *     tags: [Examples]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -156,10 +178,11 @@ router.put(
  *           type: string
  *         required: true
  *         description: The example id
- *
  *     responses:
  *       204:
  *         description: The example was deleted
+ *       401:
+ *         description: Unauthorized
  *       404:
  *         description: The example was not found
  *       500:

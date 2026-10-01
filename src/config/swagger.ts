@@ -4,20 +4,30 @@ import { version } from '../../package.json';
 const swaggerDefinition = {
   openapi: '3.0.0',
   info: {
-    title: 'Express TS MongoDB Template API',
+    title: 'Express TS PostgreSQL Enterprise API',
     version,
     description:
-      'A template for building REST APIs with Express, TypeScript, and MongoDB, documented with Swagger.',
+      'Enterprise-grade REST API built with Express, TypeScript, and PostgreSQL (Drizzle ORM).',
     license: {
       name: 'ISC',
     },
   },
   servers: [
     {
-      url: 'http://localhost:3000/api',
-      description: 'Development server',
+      url: '/api',
+      description: 'API base path',
     },
   ],
+  components: {
+    securitySchemes: {
+      bearerAuth: {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description: 'Provide JWT access token in the format: Bearer <token>',
+      },
+    },
+  },
 };
 
 const options: swaggerJSDoc.Options = {

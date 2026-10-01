@@ -13,11 +13,11 @@ export const notFoundHandler = (
   next(new NotFoundError(`Route not found: ${req.originalUrl}`));
 };
 
-// Main error handling middleware
 export const errorHandler = (
   err: Error,
   req: Request,
   res: Response,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   next: NextFunction
 ) => {
   let error = err;

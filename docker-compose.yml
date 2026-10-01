@@ -30,7 +30,8 @@ services:
   db:
     image: postgres:16-alpine
     ports:
-      - '${DB_PORT}:${DB_PORT}'
+      # Bind to localhost only to prevent exposure on public network interfaces
+      - '127.0.0.1:${DB_PORT}:${DB_PORT}'
     environment:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}

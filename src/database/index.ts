@@ -9,17 +9,29 @@ let client!: postgres.Sql;
 
 try {
   if (
-    !process.env.DB_USERNAME ||
-    !process.env.DB_NAME ||
-    connectionString.includes('undefined')
+    (!process.env.DB_USERNAME && appConfig.APP.NODE_ENV !== 'test') ||
+    (!process.env.DB_NAME && appConfig.APP.NODE_ENV !== 'test') ||
+    (connectionString.includes('undefined') &&
+      appConfig.APP.NODE_ENV !== 'test')
   ) {
-    throw new Error('DB Creds are not configured');
+    throw new Error(
+      'Database credentials are not configured in environment variables.'
+    );
   }
-  // Disable prefetch as it is not supported for "Transaction" pool mode
-  client = postgres(connectionString, { prepare: false });
-} catch {
-  logger.error('DB Creds are not configured closing');
-  process.exit(1);
+
+  // Postgres client with SSL support and managed pool timeouts
+  client = postgres(connectionString, {
+    prepare: false, // Transaction pool mode compatible
+    ssl: appConfig.DB.SSL ? 'require' : false,
+    max: 10,
+    idle_timeout: 20,
+    connect_timeout: 10,
+  });
+} catch (error) {
+  logger.error('CRITICAL: Database configuration error:', error);
+  if (appConfig.APP.NODE_ENV !== 'test') {
+    process.exit(1);
+  }
 }
 
 export { client };

@@ -1,5 +1,4 @@
 import { Example } from '@/database/models/example.model';
-import { CreateExampleInput, UpdateExampleInput } from './example.schema';
 
 /**
  * Converts an Example Drizzle object to a plain JavaScript object (DTO)

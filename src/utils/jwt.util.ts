@@ -9,47 +9,58 @@ import { appConfig } from '@/config';
 
 export interface TokenPayload {
   userId: string;
-  email: string;
-  jti?: string; // Add jti as an optional property
+  email?: string;
+  role?: string;
+  typ?: 'access' | 'refresh';
+  jti?: string;
 }
 
 /**
  * Generates an access token.
+ * Pinned to HS256 and signed with dedicated ACCESS_TOKEN_SECRET.
  * @param payload The data to include in the token.
  * @returns The generated access token string.
  */
-export const generateAccessToken = (payload: TokenPayload): string => {
+export const generateAccessToken = (
+  payload: Omit<TokenPayload, 'typ'>
+): string => {
   const options: SignOptions = {
     expiresIn: appConfig.JWT.ACCESS_TOKEN_TIME as SignOptions['expiresIn'],
+    algorithm: 'HS256',
   };
-  return jwt.sign(payload, appConfig.JWT.ACCESS_TOKEN_SECRET, options);
+  return jwt.sign(
+    { ...payload, typ: 'access' },
+    appConfig.JWT.ACCESS_TOKEN_SECRET,
+    options
+  );
 };
 
 /**
- * Generates a refresh token and saves its metadata to the database.
+ * Generates a refresh token and securely persists session metadata to the database.
+ * Pinned to HS256 and signed with dedicated REFRESH_TOKEN_SECRET.
  * @param payload The data to include in the token.
  * @param userAgent The user agent of the client.
  * @returns An object containing the refresh token string and its JTI.
  */
-export const generateRefreshToken = (
-  payload: TokenPayload,
+export const generateRefreshToken = async (
+  payload: Omit<TokenPayload, 'typ'>,
   userAgent: string
-): { refreshToken: string; jti: string } => {
+): Promise<{ refreshToken: string; jti: string }> => {
   const jti = uuidv4();
   const options: SignOptions = {
     expiresIn: appConfig.JWT.REFRESH_TOKEN_TIME as SignOptions['expiresIn'],
     jwtid: jti,
+    algorithm: 'HS256',
   };
   const refreshToken = jwt.sign(
-    payload,
-    appConfig.JWT.ACCESS_TOKEN_SECRET,
+    { ...payload, typ: 'refresh' },
+    appConfig.JWT.REFRESH_TOKEN_SECRET,
     options
   );
 
   // Calculate expiration date for database storage
   let expiresInSeconds: number;
   if (typeof appConfig.JWT.REFRESH_TOKEN_TIME === 'string') {
-    // A simple parser for formats like "7d", "59m", etc.
     const value = parseInt(appConfig.JWT.REFRESH_TOKEN_TIME.slice(0, -1), 10);
     const unit = appConfig.JWT.REFRESH_TOKEN_TIME.slice(-1);
     switch (unit) {
@@ -74,41 +85,83 @@ export const generateRefreshToken = (
 
   const expiresAt = new Date(Date.now() + expiresInSeconds * 1000);
 
-  // Save refresh token metadata to database
-  db.insert(authSessionTokens)
-    .values({
+  // Await saving refresh token metadata to database to ensure atomic session creation
+  try {
+    await db.insert(authSessionTokens).values({
       userId: payload.userId,
       jti: jti,
       expiresAt: expiresAt,
       isUsed: false,
-      userAgent: userAgent,
-    })
-    .catch(err => {
-      logger.error('Error saving AuthSessionToken:', err);
-      // Non-blocking call: Don't prevent token generation even if DB save fails.
+      userAgent: userAgent || 'unknown',
     });
+  } catch (err) {
+    logger.error('Failed to persist refresh token session to database:', err);
+    throw new Error('Authentication session creation failed.');
+  }
 
   return { refreshToken, jti };
 };
 
 /**
- * Verifies a JWT token.
- * @param token The JWT token string to verify.
+ * Verifies an access token.
+ * Validates HS256 algorithm and checks token type.
+ * @param token The JWT access token string to verify.
  * @returns The decoded payload if the token is valid.
- * @throws {UnauthorizedError} if the token is invalid or expired.
  */
-export const verifyToken = (token: string): TokenPayload => {
+export const verifyAccessToken = (token: string): TokenPayload => {
   try {
-    return jwt.verify(token, appConfig.JWT.ACCESS_TOKEN_SECRET) as TokenPayload;
+    const payload = jwt.verify(token, appConfig.JWT.ACCESS_TOKEN_SECRET, {
+      algorithms: ['HS256'],
+    }) as TokenPayload;
+
+    if (payload.typ && payload.typ !== 'access') {
+      throw new UnauthorizedError('Invalid token type: expected access token.');
+    }
+
+    return payload;
   } catch (error) {
-    if (error instanceof jwt.TokenExpiredError) {
+    if (error instanceof UnauthorizedError) {
+      throw error;
+    } else if (error instanceof jwt.TokenExpiredError) {
       throw new UnauthorizedError(errorMessages.AUTH.EXPIRED_TOKEN);
-    } else if (error instanceof jwt.JsonWebTokenError) {
-      throw new UnauthorizedError(errorMessages.AUTH.INVALID_TOKEN);
     }
     throw new UnauthorizedError(errorMessages.AUTH.INVALID_TOKEN);
   }
 };
+
+/**
+ * Verifies a refresh token.
+ * Validates HS256 algorithm, dedicated REFRESH_TOKEN_SECRET, and refresh token type.
+ * @param token The JWT refresh token string to verify.
+ * @returns The decoded payload if the token is valid.
+ */
+export const verifyRefreshToken = (token: string): TokenPayload => {
+  try {
+    const payload = jwt.verify(token, appConfig.JWT.REFRESH_TOKEN_SECRET, {
+      algorithms: ['HS256'],
+    }) as TokenPayload;
+
+    if (payload.typ !== 'refresh') {
+      throw new UnauthorizedError(
+        'Invalid token type: expected refresh token.'
+      );
+    }
+
+    return payload;
+  } catch (error) {
+    if (error instanceof UnauthorizedError) {
+      throw error;
+    } else if (error instanceof jwt.TokenExpiredError) {
+      throw new UnauthorizedError(errorMessages.AUTH.EXPIRED_TOKEN);
+    }
+    throw new UnauthorizedError(errorMessages.AUTH.INVALID_TOKEN);
+  }
+};
+
+/**
+ * Backward compatibility alias for verifyAccessToken.
+ */
+export const verifyToken = verifyAccessToken;
 
 /**
  * Decodes a JWT token without verifying its signature.
