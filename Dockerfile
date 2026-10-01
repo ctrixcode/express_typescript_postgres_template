@@ -1,22 +1,41 @@
-# Use a Node.js base image
-FROM node:20-slim
-
-# Set the working directory in the container
+# Stage 1: Base image
+FROM node:20-slim AS base
 WORKDIR /app
 
-# Copy package.json and the lockfile to leverage Docker layer caching
-# A wildcard is used to copy package-lock.json if it exists
+# Stage 2: Development (used for local docker compose development)
+FROM base AS development
 COPY package*.json ./
-
-# Install all dependencies, including devDependencies
 RUN npm install
-
-# Copy the rest of the application's source code
 COPY . .
+ARG PORT=4000
+EXPOSE ${PORT}
+CMD ["npm", "run", "dev"]
 
-# Expose the port the app runs on
+# Stage 3: Builder (compile TypeScript)
+FROM base AS builder
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+
+# Stage 4: Production (minimal footprint, non-root user)
+FROM base AS production
+ENV NODE_ENV=production
+
+# Install only production dependencies
+COPY package*.json ./
+RUN npm ci --omit=dev && npm cache clean --force
+
+# Copy compiled JavaScript output
+COPY --chown=node:node --from=builder /app/dist ./dist
+
+# Create logs directory owned by node user
+RUN mkdir -p logs && chown -R node:node /app
+
+# Run as non-root user (CIS Docker Benchmark & SOC 2)
+USER node
+
 ARG PORT=4000
 EXPOSE ${PORT}
 
-# The command to run the application in development mode with live-reloading
-CMD ["npm", "run", "dev"]
+CMD ["node", "dist/server.js"]
