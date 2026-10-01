@@ -19,9 +19,11 @@ let server: Server; // Declare server variable to hold the http.Server instance
       logger.info(
         `📊 Health check available at: http://localhost:${PORT}/api/healthz`
       );
-      logger.info(
-        `📚 API docs available at: http://localhost:${PORT}/api-docs`
-      );
+      if (appConfig.APP.ENABLE_SWAGGER) {
+        logger.info(
+          `📚 API docs available at: http://localhost:${PORT}/api-docs`
+        );
+      }
       logger.info(`🌍 Environment: ${appConfig.APP.NODE_ENV}`);
     });
   } catch (error) {

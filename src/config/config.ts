@@ -39,6 +39,10 @@ const config = {
     ALLOWED_ORIGINS: process.env.ALLOWED_ORIGINS
       ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim())
       : ['http://localhost:3000'],
+    ENABLE_SWAGGER:
+      process.env.ENABLE_SWAGGER !== undefined
+        ? process.env.ENABLE_SWAGGER === 'true'
+        : !isProduction,
   },
   JWT: {
     ACCESS_TOKEN_SECRET: accessTokenSecret,

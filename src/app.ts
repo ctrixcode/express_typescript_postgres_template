@@ -2,6 +2,7 @@ import express from 'express';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import swaggerUi from 'swagger-ui-express';
+import { appConfig } from './config';
 import { swaggerSpec } from './config/swagger';
 import {
   generalLimiter,
@@ -35,8 +36,10 @@ app.use(sanitizeInput);
 // API Routes
 app.use('/api', routes);
 
-// Swagger Docs
-app.use('/api-docs', ...swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+// Swagger Docs (gated: disabled by default in production)
+if (appConfig.APP.ENABLE_SWAGGER) {
+  app.use('/api-docs', ...swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+}
 
 // Error Handling
 app.use(notFoundHandler);
