@@ -159,11 +159,6 @@ export const verifyRefreshToken = (token: string): TokenPayload => {
 };
 
 /**
- * Backward compatibility alias for verifyAccessToken.
- */
-export const verifyToken = verifyAccessToken;
-
-/**
  * Decodes a JWT token without verifying its signature.
  * @param token The JWT token string to decode.
  * @returns The decoded payload or null if decoding fails.
