@@ -7,17 +7,17 @@ config:
     inherit: true
     config:
       protocol: http
-      hostname: ""
-      port: ""
+      hostname: ''
+      port: ''
       auth:
-        username: ""
-        password: ""
-      bypassProxy: ""
+        username: ''
+        password: ''
+      bypassProxy: ''
 
 request:
   auth:
     type: bearer
-    token: "{{accessToken}}"
+    token: '{{accessToken}}'
 bundled: false
 extensions:
   bruno:
@@ -27,4 +27,4 @@ extensions:
     presets:
       request:
         type: http
-        url: "{{baseURL}}/"
+        url: '{{baseURL}}/'

@@ -1,11 +1,11 @@
 info:
-  name: "Create "
+  name: 'Create '
   type: http
   seq: 1
 
 http:
   method: POST
-  url: "{{baseURL}}/api/examples"
+  url: '{{baseURL}}/api/examples'
   body:
     type: json
     data: |-
