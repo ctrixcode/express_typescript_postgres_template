@@ -4,7 +4,7 @@
   "main": "dist/server.js",
   "scripts": {
     "start": "node dist/server.js",
-    "dev": "nodemon -r tsconfig-paths/register --exec ts-node src/server.ts",
+    "dev": "nodemon --quiet -r tsconfig-paths/register --exec ts-node src/server.ts",
     "build": "tsc && tsc-alias",
     "test": "jest --passWithNoTests",
     "prettier": "prettier --check .",

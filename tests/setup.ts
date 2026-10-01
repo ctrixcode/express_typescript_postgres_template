@@ -3,7 +3,7 @@ import app from '@/app';
 import { IncomingMessage, Server, ServerResponse } from 'http';
 import { client } from '@/database';
 
-dotenv.config();
+dotenv.config({ quiet: true });
 
 export let server: Server<
   typeof IncomingMessage,
