@@ -4,6 +4,7 @@ import { UnauthorizedError, ForbiddenError } from '@/helpers';
 import { error as errorMessages } from '@/constants/messages';
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
       user?: TokenPayload;
