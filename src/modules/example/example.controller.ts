@@ -65,7 +65,7 @@ export const getExamples = asyncHandler(
  * Get example item by ID
  */
 export const getExampleById = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
+  async (req: Request<{ id: string }>, res: Response): Promise<void> => {
     const { id } = req.params;
     const example = await exampleService.getExampleById(id);
     const exampleDto = toExampleDto(example);
@@ -104,7 +104,7 @@ export const updateExample = asyncHandler(
  * Delete example item (soft delete)
  */
 export const deleteExample = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
+  async (req: Request<{ id: string }>, res: Response): Promise<void> => {
     const { id } = req.params;
     await exampleService.deleteExample(id);
     res.status(204).send(); // No content, so no success response handler needed
@@ -115,7 +115,7 @@ export const deleteExample = asyncHandler(
  * Get examples by category
  */
 export const getExamplesByCategory = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
+  async (req: Request<{ category: string }>, res: Response): Promise<void> => {
     const { category } = req.params;
     const examples = await exampleService.getExamplesByCategory(category);
     const examplesDto = examples.map(toExampleDto);

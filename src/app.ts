@@ -33,7 +33,7 @@ app.use(sanitizeInput);
 app.use('/api', routes);
 
 // Swagger Docs
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/api-docs', ...swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Error Handling
 app.use(notFoundHandler);
