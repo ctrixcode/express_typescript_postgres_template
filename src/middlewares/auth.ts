@@ -1,7 +1,15 @@
 import { Request, Response, NextFunction } from 'express';
-import { verifyAccessToken } from '@/utils/jwt.util';
+import { verifyAccessToken, TokenPayload } from '@/utils/jwt.util';
 import { UnauthorizedError, ForbiddenError } from '@/helpers';
 import { error as errorMessages } from '@/constants/messages';
+
+declare global {
+  namespace Express {
+    interface Request {
+      user?: TokenPayload;
+    }
+  }
+}
 
 /**
  * Middleware to authenticate requests using a JWT Bearer access token.

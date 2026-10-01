@@ -14,10 +14,9 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": [
-    "src/**/*.ts"
-  ] /* Specify an array of filenames or patterns to include in the program. */,
-  "exclude": [
-    "node_modules"
-  ] /* Specify an array of filenames or patterns that should be excluded from the program. */
+  "include": ["src/**/*"],
+  "ts-node": {
+    "files": true
+  },
+  "exclude": ["node_modules"]
 }
