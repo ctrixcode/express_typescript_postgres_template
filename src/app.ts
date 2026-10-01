@@ -17,6 +17,9 @@ import routes from './routes/index';
 
 const app = express();
 
+// Trust reverse proxy (e.g. Nginx, Cloudflare, AWS ALB) for accurate client IP resolution
+app.set('trust proxy', 1);
+
 // Core Middlewares
 app.use(helmet());
 app.use(corsMiddleware);

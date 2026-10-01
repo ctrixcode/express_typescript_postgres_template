@@ -59,16 +59,8 @@ const sanitizeString = (str: string): string => {
 
   return (
     str
-      // Remove HTML tags
-      .replace(/<[^>]*>/g, '')
-      // Remove script content
-      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-      // Remove dangerous attributes
-      .replace(/on\w+\s*=/gi, '')
-      .replace(/javascript:/gi, '')
-      // Remove null bytes
+      // Remove dangerous null bytes to prevent null byte injection
       .replace(/\0/g, '')
-      // Trim whitespace
       .trim()
   );
 };
@@ -77,12 +69,12 @@ const sanitizeString = (str: string): string => {
  * XSS Protection middleware
  */
 export const xssProtection = (
-  req: Request,
+  _req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  // Set security headers
-  res.setHeader('X-XSS-Protection', '1; mode=block');
+  // Set modern security headers per OWASP guidelines (disable deprecated buggy XSS auditor)
+  res.setHeader('X-XSS-Protection', '0');
   res.setHeader('X-Content-Type-Options', 'nosniff');
 
   next();
@@ -134,7 +126,7 @@ export const sqlInjectionProtection = (
 };
 
 /**
- * Rate limiting for specific endpoints
+ * Rate limiting for specific endpoints with memory leak protection
  */
 export const createRateLimit = (
   windowMs: number = 15 * 60 * 1000,
@@ -143,8 +135,17 @@ export const createRateLimit = (
   const requests = new Map<string, { count: number; resetTime: number }>();
 
   return (req: Request, res: Response, next: NextFunction) => {
-    const ip = req.ip || req.connection.remoteAddress || 'unknown';
+    const ip = req.ip || req.socket.remoteAddress || 'unknown';
     const now = Date.now();
+
+    // Prune expired entries to prevent memory exhaustion
+    if (requests.size > 500) {
+      for (const [key, val] of requests.entries()) {
+        if (now > val.resetTime) {
+          requests.delete(key);
+        }
+      }
+    }
 
     const userRequests = requests.get(ip);
 

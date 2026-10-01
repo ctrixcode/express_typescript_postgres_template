@@ -98,11 +98,17 @@ export const getExamplesSchema = z.object({
     page: z
       .string()
       .optional()
-      .transform(val => (val ? parseInt(val, 10) : 1)),
+      .transform(val => {
+        const parsed = val ? parseInt(val, 10) : 1;
+        return isNaN(parsed) || parsed < 1 ? 1 : parsed;
+      }),
     limit: z
       .string()
       .optional()
-      .transform(val => (val ? parseInt(val, 10) : 10)),
+      .transform(val => {
+        const parsed = val ? parseInt(val, 10) : 10;
+        return isNaN(parsed) || parsed < 1 ? 10 : Math.min(parsed, 100);
+      }),
     category: z.string().optional(),
     isDeleted: z
       .enum(['true', 'false'])

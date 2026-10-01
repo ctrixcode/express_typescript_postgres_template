@@ -204,14 +204,15 @@ export const search = async (
   searchTerm: string
 ): Promise<(typeof examples.$inferSelect)[]> => {
   try {
+    const safeTerm = searchTerm.replace(/[%_\\]/g, '\\$&');
     const resultExamples = await db
       .select()
       .from(examples)
       .where(
         and(
           or(
-            like(examples.name, `%${searchTerm}%`),
-            like(examples.description, `%${searchTerm}%`)
+            like(examples.name, `%${safeTerm}%`),
+            like(examples.description, `%${safeTerm}%`)
           ),
           eq(examples.isDeleted, false)
         )
