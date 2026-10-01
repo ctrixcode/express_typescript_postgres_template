@@ -21,15 +21,47 @@ const colors = {
 
 winston.addColors(colors);
 
-const level = () => {
-  const env = appConfig.APP.NODE_ENV;
-  const isDevelopment = env === 'development';
-  return isDevelopment ? 'debug' : 'warn';
+// Formatter to redact sensitive fields (passwords, tokens, secrets) in logs while preserving Winston symbols
+const maskSensitiveData = winston.format(info => {
+  const sensitiveKeys = [
+    'password',
+    'token',
+    'secret',
+    'authorization',
+    'cookie',
+  ];
+
+  const maskObject = (obj: unknown): unknown => {
+    if (!obj || typeof obj !== 'object') return obj;
+    if (Array.isArray(obj)) return obj.map(maskObject);
+
+    const target = obj as Record<string, unknown>;
+    for (const key of Object.keys(target)) {
+      if (sensitiveKeys.some(s => key.toLowerCase().includes(s))) {
+        target[key] = '[REDACTED]';
+      } else if (typeof target[key] === 'object' && target[key] !== null) {
+        maskObject(target[key]);
+      }
+    }
+    return target;
+  };
+
+  maskObject(info);
+  return info;
+});
+
+const getLogLevel = () => {
+  const configuredLevel = appConfig.APP.LOG_LEVEL?.toLowerCase();
+  if (configuredLevel && configuredLevel in levels) {
+    return configuredLevel;
+  }
+  return appConfig.APP.NODE_ENV === 'development' ? 'debug' : 'http';
 };
 
 const transports = [
   new winston.transports.Console({
     format: winston.format.combine(
+      maskSensitiveData(),
       winston.format.timestamp({ format: 'HH:mm:ss' }),
       winston.format.colorize({ all: true }),
       winston.format.printf(
@@ -47,6 +79,7 @@ const transports = [
     maxFiles: '14d',
     level: 'error',
     format: winston.format.combine(
+      maskSensitiveData(),
       winston.format.timestamp(),
       winston.format.json()
     ),
@@ -60,6 +93,7 @@ const transports = [
     maxSize: '20m',
     maxFiles: '14d',
     format: winston.format.combine(
+      maskSensitiveData(),
       winston.format.timestamp(),
       winston.format.json()
     ),
@@ -67,7 +101,7 @@ const transports = [
 ];
 
 export const logger = winston.createLogger({
-  level: level(),
+  level: getLogLevel(),
   levels,
   transports,
 });
