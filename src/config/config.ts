@@ -8,7 +8,7 @@ const config = {
     NODE_ENV: process.env.NODE_ENV || 'development',
     LOG_LEVEL: process.env.LOG_LEVEL || 'info',
     ENCRYPTION_KEY:
-      process.env.ENCRYPTION_KEY || 'thisisasecretkeyfor32byteslong!',
+      process.env.ENCRYPTION_KEY || 'your-32-byte-encryption-key-here',
     ALLOWED_ORIGINS: process.env.ALLOWED_ORIGINS
       ? process.env.ALLOWED_ORIGINS.split(',')
       : ['http://localhost:3000'],
