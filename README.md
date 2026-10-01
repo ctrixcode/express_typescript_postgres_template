@@ -36,21 +36,20 @@ A modern, scalable, and production-ready Node.js API template designed for build
 ├── bruno/              # Bruno API client collection
 ├── drizzle/            # Drizzle ORM migration files
 ├── src/
-│   ├── app.ts          # Express app configuration and middlewares
-│   ├── server.ts       # Server entry point
-│   ├── config/         # App configuration (Swagger, etc.)
-│   ├── constants/      # App-wide constants
-│   ├── controllers/    # Route handlers
-│   ├── db/             # Database connection setup
-│   ├── mappers/        # Data transformation logic
-│   ├── middlewares/    # Custom Express middlewares
-│   ├── models/         # Drizzle ORM schemas
-│   ├── repositories/   # Database query logic
-│   ├── routes/         # API route definitions
-│   ├── schemas/        # Zod validation schemas
-│   ├── services/       # Business logic
+│   ├── app.ts          # Express app configuration and middleware assembly
+│   ├── server.ts       # Server entry point and graceful shutdown
+│   ├── config/         # App configuration (environment, Swagger)
+│   ├── constants/      # App-wide constants and response messages
+│   ├── database/       # Database connection setup and schema
+│   │   ├── models/     # Drizzle ORM schema models
+│   │   └── migration/  # SQL migration files
+│   ├── helpers/        # Standardized error and response handlers
+│   ├── middlewares/    # Express middlewares (auth, rate-limit, logging, etc.)
+│   ├── modules/        # Domain-driven feature modules
+│   │   └── example/    # Feature controller, service, repository, schema, routes
+│   ├── routes/         # Central API route definitions
 │   ├── types/          # Custom TypeScript types
-│   └── utils/          # Utility functions and classes
+│   └── utils/          # Utilities (JWT auth, AES-GCM encryption, Winston logger)
 ├── tests/              # Jest tests (integration, unit)
 ├── .env.example        # Example environment variables
 ├── docker-compose.yml  # Docker Compose configuration
