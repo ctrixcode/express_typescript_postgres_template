@@ -3,7 +3,7 @@ import jwt, { SignOptions } from 'jsonwebtoken';
 // Jest CommonJS vs ESM module loader conflicts ('Must use import to load ES Module').
 import { randomUUID } from 'crypto';
 import { db } from '@/database';
-import { authSessionTokens } from '@/database/models/authSessionToken.model';
+import { authSessionTokens } from '@/database/models/auth-session-token.model';
 import { UnauthorizedError } from '@/helpers';
 import { error as errorMessages } from '@/constants/messages';
 import { logger } from './logger.util';
