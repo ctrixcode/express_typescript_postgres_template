@@ -51,7 +51,7 @@ router.use(authenticateToken);
 router.post(
   '/',
   validate(createExampleSchema),
-  exampleController.createExample
+  exampleController.createExampleHandler
 );
 
 /**
@@ -87,7 +87,11 @@ router.post(
  *       500:
  *         description: Some server error
  */
-router.get('/', validate(getExamplesSchema), exampleController.getExamples);
+router.get(
+  '/',
+  validate(getExamplesSchema),
+  exampleController.getExamplesHandler
+);
 
 /**
  * @swagger
@@ -118,7 +122,7 @@ router.get('/', validate(getExamplesSchema), exampleController.getExamples);
  *       500:
  *         description: Some server error
  */
-router.get('/:id', exampleController.getExampleById);
+router.get('/:id', exampleController.getExampleByIdHandler);
 
 /**
  * @swagger
@@ -160,7 +164,7 @@ router.get('/:id', exampleController.getExampleById);
 router.put(
   '/:id',
   validate(updateExampleSchema),
-  exampleController.updateExample
+  exampleController.updateExampleHandler
 );
 
 /**
@@ -188,6 +192,6 @@ router.put(
  *       500:
  *         description: Some server error
  */
-router.delete('/:id', exampleController.deleteExample);
+router.delete('/:id', exampleController.deleteExampleHandler);
 
 export default router;
