@@ -1,7 +1,7 @@
 import { Example } from '@/database/models/example.model';
 import * as exampleRepository from './example.repository';
 import { CreateExampleInput, UpdateExampleInput } from './example.schema';
-import { NotFoundError, BadRequestError } from '@/helpers';
+import { NotFoundError } from '@/helpers';
 import { error as errorMessages } from '@/constants/messages';
 
 /**
@@ -32,10 +32,6 @@ export const getExamples = async (
  * Get example item by ID
  */
 export const getExampleById = async (exampleId: string): Promise<Example> => {
-  // Basic integer check for ID if using serial IDs
-  if (isNaN(Number(exampleId))) {
-    throw new BadRequestError(errorMessages.INVALID_ID('Example'));
-  }
   const example = await exampleRepository.findById(exampleId);
   if (!example) {
     throw new NotFoundError(errorMessages.NOT_FOUND('Example'));
@@ -50,9 +46,6 @@ export const updateExample = async (
   exampleId: string,
   updateData: UpdateExampleInput
 ): Promise<Example> => {
-  if (isNaN(Number(exampleId))) {
-    throw new BadRequestError(errorMessages.INVALID_ID('Example'));
-  }
   const example = await exampleRepository.update(exampleId, updateData);
   if (!example) {
     throw new NotFoundError(errorMessages.NOT_FOUND('Example'));
@@ -64,9 +57,6 @@ export const updateExample = async (
  * Delete example item (soft delete)
  */
 export const deleteExample = async (exampleId: string): Promise<boolean> => {
-  if (isNaN(Number(exampleId))) {
-    throw new BadRequestError(errorMessages.INVALID_ID('Example'));
-  }
   const success = await exampleRepository.softDelete(exampleId);
   if (!success) {
     throw new NotFoundError(errorMessages.NOT_FOUND('Example'));

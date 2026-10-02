@@ -158,22 +158,38 @@ export type GetExamplesQueryInput = z.infer<typeof GetExamplesQuerySchema>;
 // 4. Express Route Validation Schemas
 // ==========================================
 
+export const ExampleIdParamSchema = z.object({
+  params: z.object({
+    id: z.string().regex(/^\d+$/, 'Example ID must be a numeric integer'),
+  }),
+});
+export type ExampleIdParam = z.infer<typeof ExampleIdParamSchema>['params'];
+
 export const CreateExampleRouteSchema = z.object({
   body: CreateExampleBodySchema,
 });
 export type CreateExampleRoute = z.infer<typeof CreateExampleRouteSchema>;
-
-export const UpdateExampleRouteSchema = z.object({
-  body: UpdateExampleBodySchema,
-});
-export type UpdateExampleRoute = z.infer<typeof UpdateExampleRouteSchema>;
 
 export const GetExamplesRouteSchema = z.object({
   query: GetExamplesQuerySchema,
 });
 export type GetExamplesRoute = z.infer<typeof GetExamplesRouteSchema>;
 
+export const GetExampleByIdRouteSchema = ExampleIdParamSchema;
+export type GetExampleByIdRoute = z.infer<typeof GetExampleByIdRouteSchema>;
+
+export const UpdateExampleRouteSchema = z.object({
+  params: ExampleIdParamSchema.shape.params,
+  body: UpdateExampleBodySchema,
+});
+export type UpdateExampleRoute = z.infer<typeof UpdateExampleRouteSchema>;
+
+export const DeleteExampleRouteSchema = ExampleIdParamSchema;
+export type DeleteExampleRoute = z.infer<typeof DeleteExampleRouteSchema>;
+
 // Legacy / Convenience Aliases
 export const createExampleSchema = CreateExampleRouteSchema;
 export const updateExampleSchema = UpdateExampleRouteSchema;
 export const getExamplesSchema = GetExamplesRouteSchema;
+export const getExampleByIdSchema = GetExampleByIdRouteSchema;
+export const deleteExampleSchema = DeleteExampleRouteSchema;

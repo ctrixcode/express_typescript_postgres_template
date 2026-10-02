@@ -6,6 +6,8 @@ import {
   createExampleSchema,
   updateExampleSchema,
   getExamplesSchema,
+  getExampleByIdSchema,
+  deleteExampleSchema,
 } from './example.schema';
 
 const router = Router();
@@ -122,7 +124,11 @@ router.get(
  *       500:
  *         description: Some server error
  */
-router.get('/:id', exampleController.getExampleByIdHandler);
+router.get(
+  '/:id',
+  validate(getExampleByIdSchema),
+  exampleController.getExampleByIdHandler
+);
 
 /**
  * @swagger
@@ -192,6 +198,10 @@ router.put(
  *       500:
  *         description: Some server error
  */
-router.delete('/:id', exampleController.deleteExampleHandler);
+router.delete(
+  '/:id',
+  validate(deleteExampleSchema),
+  exampleController.deleteExampleHandler
+);
 
 export default router;
