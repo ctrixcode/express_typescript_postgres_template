@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { createSuccessResponseSchema } from '@/utils';
 
 /**
  * @swagger
@@ -98,6 +99,15 @@ export const ExampleItemSchema = z.object({
   updatedAt: z.date().or(z.string()).nullable(),
 });
 export type ExampleItem = z.infer<typeof ExampleItemSchema>;
+
+export const ExampleResponseSchema =
+  createSuccessResponseSchema(ExampleItemSchema);
+export type ExampleResponse = z.infer<typeof ExampleResponseSchema>;
+
+export const ExampleListResponseSchema = createSuccessResponseSchema(
+  z.array(ExampleItemSchema)
+);
+export type ExampleListResponse = z.infer<typeof ExampleListResponseSchema>;
 
 // ==========================================
 // 3. Request Body & Query Schemas
