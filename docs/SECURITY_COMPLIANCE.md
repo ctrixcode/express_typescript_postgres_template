@@ -6,21 +6,23 @@ This document provides a comprehensive security review and compliance audit for 
 
 ## Executive Summary
 
-| Category                                   | Status                      | Coverage                                                                           | Primary Standards Addressed             |
-| :----------------------------------------- | :-------------------------- | :--------------------------------------------------------------------------------- | :-------------------------------------- |
-| **Authentication & Tokens**                | ✅ Completed (Foundational) | Dual JWT (Access/Refresh), algorithm pinning, session DB persistence               | OWASP A07, NIST SP 800-63B              |
-| **Access Control (RBAC)**                  | ✅ Completed (Foundational) | Bearer token verification, role enforcement, route protection                      | OWASP A01, SOC 2 CC6.1                  |
-| **Cryptography & Data Protection**         | ✅ Completed                | AES-256-GCM authenticated cipher, DB SSL, secret validation                        | OWASP A02, NIST SP 800-38D, ISO 27001   |
-| **Injection Mitigation & Sanitization**    | ✅ Completed                | Drizzle ORM parameterization, SQL LIKE escaping, null-byte stripping, Zod schemas  | OWASP A03, CWE-89, CWE-79               |
-| **DoS & Resource Exhaustion Defense**      | ✅ Completed                | Rate limiting (IPv6-aware), payload bounds (1MB), query pagination caps            | OWASP A04, API Security API4:2023       |
-| **Security Misconfiguration & Headers**    | ✅ Completed                | Helmet HTTP headers, strict CORS, production Swagger gating, safe error handling   | OWASP A05, SOC 2 CC6.6                  |
-| **Logging, Auditing & Privacy**            | ✅ Completed (Foundational) | Sensitive field redaction, daily rotation (14d/20MB), request logger, soft deletes | OWASP A09, GDPR Art. 25/32, SOC 2 CC7.1 |
-| **Container & Infrastructure Security**    | ✅ Completed                | Non-root container (`node`), multi-stage build, localhost-bound DB port            | CIS Docker Benchmark, SOC 2 CC6.6       |
-| **User Management & Password Hashing**     | ❌ Pending                  | Password hashing (Argon2id), registration/login flows, MFA                         | OWASP A07, NIST SP 800-63B              |
-| **Object-Level Authorization (BOLA/IDOR)** | ❌ Pending                  | Resource ownership checks in services/repositories                                 | OWASP API1:2023                         |
-| **Distributed State & Rate Limiting**      | ❌ Pending                  | Redis-backed rate limiting & token blacklist across multi-node clusters            | SOC 2 CC6.6, Availability               |
-| **Security Auditing & SIEM Integration**   | ❌ Pending                  | Tamper-proof audit logs for security events & log forwarder                        | SOC 2 CC7.2, HIPAA § 164.312            |
-| **Automated DevSecOps & SCA/SAST**         | ❌ Pending                  | CI/CD dependency vulnerability scans (`npm audit`, Trivy, GitLeaks)                | OWASP A06, SOC 2 CC6.8                  |
+| Category                                   | Status                      | Coverage                                                                                                   | Primary Standards Addressed             |
+| :----------------------------------------- | :-------------------------- | :--------------------------------------------------------------------------------------------------------- | :-------------------------------------- |
+| **Authentication & Tokens**                | ✅ Completed (Foundational) | Dual JWT (Access/Refresh), algorithm pinning, session DB persistence                                       | OWASP A07, NIST SP 800-63B              |
+| **User Model & Password Hashing**          | ✅ Completed                | Persistent `users` table, `crypto.scrypt` password hashing, timing-safe equality, cascade session deletion | OWASP A07, NIST SP 800-63B, SOC 2 CC6.3 |
+| **Live User Verification in Middleware**   | ✅ Completed                | Real-time existence & active status verification in `authenticateToken`, `req.dbUser` attachment           | OWASP A01/A07, SOC 2 CC6.1              |
+| **Access Control (RBAC)**                  | ✅ Completed (Foundational) | Bearer token verification, role enforcement, route protection                                              | OWASP A01, SOC 2 CC6.1                  |
+| **Cryptography & Data Protection**         | ✅ Completed                | AES-256-GCM authenticated cipher, DB SSL, secret validation                                                | OWASP A02, NIST SP 800-38D, ISO 27001   |
+| **Injection Mitigation & Sanitization**    | ✅ Completed                | Drizzle ORM parameterization, SQL LIKE escaping, null-byte stripping, Zod schemas                          | OWASP A03, CWE-89, CWE-79               |
+| **DoS & Resource Exhaustion Defense**      | ✅ Completed                | Rate limiting (IPv6-aware), payload bounds (1MB), query pagination caps                                    | OWASP A04, API Security API4:2023       |
+| **Security Misconfiguration & Headers**    | ✅ Completed                | Helmet HTTP headers, strict CORS, production Swagger gating, safe error handling                           | OWASP A05, SOC 2 CC6.6                  |
+| **Logging, Auditing & Privacy**            | ✅ Completed (Foundational) | Sensitive field redaction, daily rotation (14d/20MB), request logger, soft deletes                         | OWASP A09, GDPR Art. 25/32, SOC 2 CC7.1 |
+| **Container & Infrastructure Security**    | ✅ Completed                | Non-root container (`node`), multi-stage build, localhost-bound DB port                                    | CIS Docker Benchmark, SOC 2 CC6.6       |
+| **User Auth HTTP Endpoints & MFA**         | ❌ Pending                  | Registration/login controller, refresh token rotation endpoint, MFA                                        | OWASP A07, NIST SP 800-63B              |
+| **Object-Level Authorization (BOLA/IDOR)** | ❌ Pending                  | Resource ownership checks in services/repositories                                                         | OWASP API1:2023                         |
+| **Distributed State & Rate Limiting**      | ❌ Pending                  | Redis-backed rate limiting & token blacklist across multi-node clusters                                    | SOC 2 CC6.6, Availability               |
+| **Security Auditing & SIEM Integration**   | ❌ Pending                  | Tamper-proof audit logs for security events & log forwarder                                                | SOC 2 CC7.2, HIPAA § 164.312            |
+| **Automated DevSecOps & SCA/SAST**         | ❌ Pending                  | CI/CD dependency vulnerability scans (`npm audit`, Trivy, GitLeaks)                                        | OWASP A06, SOC 2 CC6.8                  |
 
 ---
 
@@ -48,6 +50,18 @@ This document provides a comprehensive security review and compliance audit for 
       - `JWT_REFRESH_TOKEN_SECRET` must be set and >= 32 characters.
       - Access secret and Refresh secret cannot be identical.
       - Default fallback development secrets are strictly prohibited and immediately terminate the process (`process.exit(1)`).
+  - **Persistent User Model & Identity Store**:
+    - **Implementation**: [`src/database/models/user.model.ts`](file:///c:/Users/DELL/development/express_typescript_postgres_template/src/database/models/user.model.ts)
+    - **Mechanism**: Dedicated PostgreSQL `users` table storing unique `email`, hashed `password`, `name`, `role` (default `'user'`), `isActive` (default `true` for instant account suspension), `isEmailVerified` (default `false`), and timestamps (`lastLoginAt`, `createdAt`, `updatedAt`). Exported [`SafeUser`](file:///c:/Users/DELL/development/express_typescript_postgres_template/src/database/models/user.model.ts) (`Omit<User, 'password'>`) prevents accidental leakage of password hashes.
+  - **Cryptographic Password Hashing (scrypt + timingSafeEqual)**:
+    - **Implementation**: [`src/utils/password.util.ts`](file:///c:/Users/DELL/development/express_typescript_postgres_template/src/utils/password.util.ts)
+    - **Mechanism**: Hashes passwords using Node.js native **`crypto.scrypt`** with a cryptographically secure 16-byte random salt (`crypto.randomBytes(16)`). Verifies passwords using **`crypto.timingSafeEqual`** in constant time, eliminating side-channel timing attacks (OWASP A07 / NIST SP 800-63B).
+  - **Session Referential Integrity & Cascade Deletion**:
+    - **Implementation**: [`src/database/models/authSessionToken.model.ts`](file:///c:/Users/DELL/development/express_typescript_postgres_template/src/database/models/authSessionToken.model.ts#L6-L8)
+    - **Mechanism**: Foreign key constraint links `auth_session_tokens.user_id` to `users.id` with `onDelete: 'cascade'`. Deleting a user automatically purges all their active session tokens in PostgreSQL, satisfying **SOC 2 CC6.3** and **GDPR Art. 17**.
+  - **Real-Time Database Account Verification**:
+    - **Implementation**: [`src/middlewares/auth.ts`](file:///c:/Users/DELL/development/express_typescript_postgres_template/src/middlewares/auth.ts#L60-L100)
+    - **Mechanism**: In [`authenticateToken`](file:///c:/Users/DELL/development/express_typescript_postgres_template/src/middlewares/auth.ts), the middleware verifies that the user still exists in PostgreSQL and that `isActive === true`. If the account is deleted, it returns `401 Unauthorized`; if deactivated, it returns `403 Forbidden`. Attaches fresh profile data to `req.dbUser`.
 
 ---
 
@@ -223,23 +237,23 @@ This document provides a comprehensive security review and compliance audit for 
 
 ## 2. Compliance Framework Mapping Matrix
 
-| Standard / Control                             | Requirement                                            | Implemented Mechanism                                                       |
-| :--------------------------------------------- | :----------------------------------------------------- | :-------------------------------------------------------------------------- |
-| **OWASP A01: Broken Access Control**           | Principle of least privilege, route protection         | JWT `authenticateToken`, `requireRole`, routes protected by default         |
-| **OWASP A02: Cryptographic Failures**          | Strong encryption in transit & rest, key management    | AES-256-GCM AEAD, DB SSL enforcement, 32+ char key startup checks           |
-| **OWASP A03: Injection**                       | Safe query construction, input sanitization            | Drizzle ORM parameterized SQL, LIKE escaping, null-byte filter, Zod schemas |
-| **OWASP A04: Insecure Design**                 | Rate limiting, resource exhaustion prevention          | `generalLimiter`, IPv6 subnetting, 1MB body limit, max 100 pagination       |
-| **OWASP A05: Security Misconfiguration**       | Hardened headers, safe error handling, API doc gating  | `helmet()`, custom CORS, Swagger disabled in prod, stack traces hidden      |
-| **OWASP A07: Identification & Auth**           | Robust tokens, session lifecycle, credential checks    | HS256 algorithm pinning, dual-token architecture, DB session tracking       |
-| **OWASP A09: Logging & Monitoring**            | Audit logging, protection of log integrity             | Winston daily rotate, `maskSensitiveData` redacting secrets, HTTP logger    |
-| **SOC 2 CC6.1 / CC6.3 (Logical Access)**       | Authentication, authorization, session revocation      | JWT verification, RBAC middleware, JTI tracking in PostgreSQL               |
-| **SOC 2 CC6.6 (Perimeter Security)**           | Network boundary control, container hardening          | Non-root Docker, internal Docker network, DB localhost binding, Helmet      |
-| **SOC 2 CC6.7 (Data Transmission)**            | Cryptographic protection in transit                    | PostgreSQL SSL forced in production, reverse proxy trust                    |
-| **SOC 2 CC7.1 / CC7.2 (Threat Monitoring)**    | Anomaly detection, audit logs                          | Structured Winston logging, error tracking, IP recording                    |
-| **GDPR Art. 25 & 32 (Security of Processing)** | Data protection by design, pseudonymization/encryption | AES-256-GCM encryption, secret masking in logs, DB TLS                      |
-| **GDPR Art. 17 (Right to Erasure)**            | Data lifecycle, deletion handling                      | Soft-delete architecture with audit timestamps                              |
-| **HIPAA § 164.312 (Technical Safeguards)**     | Access control, audit controls, data integrity         | AES-256-GCM authentication tags, DB sessions, daily rotating logs           |
-| **CIS Docker Benchmark**                       | Least privilege container execution                    | `USER node`, multi-stage builder, trimmed production dependencies           |
+| Standard / Control                             | Requirement                                            | Implemented Mechanism                                                                                                                                                             |
+| :--------------------------------------------- | :----------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **OWASP A01: Broken Access Control**           | Principle of least privilege, route protection         | JWT `authenticateToken`, `requireRole`, routes protected by default                                                                                                               |
+| **OWASP A02: Cryptographic Failures**          | Strong encryption in transit & rest, key management    | AES-256-GCM AEAD, DB SSL enforcement, 32+ char key startup checks                                                                                                                 |
+| **OWASP A03: Injection**                       | Safe query construction, input sanitization            | Drizzle ORM parameterized SQL, LIKE escaping, null-byte filter, Zod schemas                                                                                                       |
+| **OWASP A04: Insecure Design**                 | Rate limiting, resource exhaustion prevention          | `generalLimiter`, IPv6 subnetting, 1MB body limit, max 100 pagination                                                                                                             |
+| **OWASP A05: Security Misconfiguration**       | Hardened headers, safe error handling, API doc gating  | `helmet()`, custom CORS, Swagger disabled in prod, stack traces hidden                                                                                                            |
+| **OWASP A07: Identification & Auth**           | Robust tokens, session lifecycle, credential checks    | HS256 algorithm pinning, dual-token architecture, DB session tracking, `users` table, `crypto.scrypt` password hashing with `timingSafeEqual`, real-time active user verification |
+| **OWASP A09: Logging & Monitoring**            | Audit logging, protection of log integrity             | Winston daily rotate, `maskSensitiveData` redacting secrets, HTTP logger                                                                                                          |
+| **SOC 2 CC6.1 / CC6.3 (Logical Access)**       | Authentication, authorization, session revocation      | JWT verification, RBAC middleware, JTI tracking in PostgreSQL, cascade delete foreign key from auth_session_tokens to users                                                       |
+| **SOC 2 CC6.6 (Perimeter Security)**           | Network boundary control, container hardening          | Non-root Docker, internal Docker network, DB localhost binding, Helmet                                                                                                            |
+| **SOC 2 CC6.7 (Data Transmission)**            | Cryptographic protection in transit                    | PostgreSQL SSL forced in production, reverse proxy trust                                                                                                                          |
+| **SOC 2 CC7.1 / CC7.2 (Threat Monitoring)**    | Anomaly detection, audit logs                          | Structured Winston logging, error tracking, IP recording                                                                                                                          |
+| **GDPR Art. 25 & 32 (Security of Processing)** | Data protection by design, pseudonymization/encryption | AES-256-GCM encryption, secret masking in logs, DB TLS                                                                                                                            |
+| **GDPR Art. 17 (Right to Erasure)**            | Data lifecycle, deletion handling                      | Soft-delete architecture with audit timestamps, cascade deletion on user removal                                                                                                  |
+| **HIPAA § 164.312 (Technical Safeguards)**     | Access control, audit controls, data integrity         | AES-256-GCM authentication tags, DB sessions, daily rotating logs                                                                                                                 |
+| **CIS Docker Benchmark**                       | Least privilege container execution                    | `USER node`, multi-stage builder, trimmed production dependencies                                                                                                                 |
 
 ---
 
@@ -249,9 +263,9 @@ To achieve complete enterprise compliance (SOC 2 Type II audit readiness, ISO 27
 
 ### 3.1 Authentication & User Lifecycle (High Priority)
 
-1. **Password Hashing Implementation**:
-   - _Current Gap_: The template provides JWT token utilities and session tables, but does not include user registration, login, or password hashing libraries.
-   - _Remediation_: Install `argon2` or `bcrypt`. Implement password hashing utilizing **Argon2id** (memory cost 64MB, time cost 3, parallelism 1) with salt and secret pepper.
+1. **User Auth HTTP Endpoints (Registration & Login Handlers)**:
+   - _Current Gap_: The `users` database table, `crypto.scrypt` password hashing utility, and JWT session logic are implemented, but the HTTP API routes and controller handlers (`POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/refresh`, `GET /api/auth/me`) are not yet created.
+   - _Remediation_: Implement the `auth` feature module (`auth.controller.ts`, `auth.routes.ts`, `auth.service.ts`, `auth.schema.ts`) using the existing password and JWT utilities.
 2. **Refresh Token Reuse Detection & Family Invalidation**:
    - _Current Gap_: While `auth_session_tokens.isUsed` is defined in the schema, the automatic token family invalidation workflow is not yet implemented.
    - _Remediation_: When a refresh token with `isUsed === true` is presented, immediately revoke all active sessions for that `userId` (detecting token theft/replay) and alert the user.
@@ -353,14 +367,14 @@ To achieve complete enterprise compliance (SOC 2 Type II audit readiness, ISO 27
 
 ## 4. Priority Remediation Matrix
 
-| Task                                              | Priority    | Effort | Risk Without Control                                    |
-| :------------------------------------------------ | :---------- | :----- | :------------------------------------------------------ |
-| **Object-Level Authorization (BOLA/IDOR)**        | 🔴 Critical | Low    | Unauthorized users viewing or altering others' data     |
-| **Password Hashing (Argon2id) & Auth Controller** | 🔴 Critical | Medium | Plaintext/unsupported user credential management        |
-| **Refresh Token Family Invalidation**             | 🔴 Critical | Low    | Replay attacks using stolen refresh tokens              |
-| **Distributed Rate Limiting (Redis)**             | 🟡 High     | Medium | Rate limiter bypass across multi-instance deployments   |
-| **Dedicated Compliance Audit Log Table**          | 🟡 High     | Medium | Failing SOC 2 / HIPAA compliance audit trails           |
-| **Automated Dependency & Secret Scanning (CI)**   | 🟡 High     | Low    | Accidental deployment of vulnerable packages or secrets |
-| **MFA / 2FA Implementation**                      | 🟢 Medium   | Medium | Account takeover via credential compromise              |
-| **Field-Level PII Encryption in Database**        | 🟢 Medium   | Medium | Cleartext PII exposure in database dumps/backups        |
-| **Hard-Purge Retention Worker (GDPR Art. 17)**    | 🟢 Medium   | Low    | Non-compliance with data erasure regulations            |
+| Task                                                | Priority    | Effort | Risk Without Control                                    |
+| :-------------------------------------------------- | :---------- | :----- | :------------------------------------------------------ |
+| **User Auth Endpoints (Register/Login/Refresh/Me)** | 🔴 Critical | Medium | Users unable to register or authenticate via API        |
+| **Object-Level Authorization (BOLA/IDOR)**          | 🔴 Critical | Low    | Unauthorized users viewing or altering others' data     |
+| **Refresh Token Family Invalidation**               | 🔴 Critical | Low    | Replay attacks using stolen refresh tokens              |
+| **Distributed Rate Limiting (Redis)**               | 🟡 High     | Medium | Rate limiter bypass across multi-instance deployments   |
+| **Dedicated Compliance Audit Log Table**            | 🟡 High     | Medium | Failing SOC 2 / HIPAA compliance audit trails           |
+| **Automated Dependency & Secret Scanning (CI)**     | 🟡 High     | Low    | Accidental deployment of vulnerable packages or secrets |
+| **MFA / 2FA Implementation**                        | 🟢 Medium   | Medium | Account takeover via credential compromise              |
+| **Field-Level PII Encryption in Database**          | 🟢 Medium   | Medium | Cleartext PII exposure in database dumps/backups        |
+| **Hard-Purge Retention Worker (GDPR Art. 17)**      | 🟢 Medium   | Low    | Non-compliance with data erasure regulations            |
