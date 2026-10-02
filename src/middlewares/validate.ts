@@ -17,8 +17,24 @@ export const validate =
         params?: typeof req.params;
       };
       if (parsed.body !== undefined) req.body = parsed.body;
-      if (parsed.query !== undefined) req.query = parsed.query;
-      if (parsed.params !== undefined) req.params = parsed.params;
+
+      // In Express 5, req.query has only a getter on Request.prototype.
+      // Reassigning 'req.query = ...' causes a TypeError.
+      // Instead, we clear existing keys and assign parsed/coerced values in place.
+      if (parsed.query !== undefined && req.query) {
+        for (const key of Object.keys(req.query)) {
+          delete (req.query as Record<string, unknown>)[key];
+        }
+        Object.assign(req.query, parsed.query);
+      }
+
+      // Mutate req.params in place to preserve Express 5 route parameter bindings.
+      if (parsed.params !== undefined && req.params) {
+        for (const key of Object.keys(req.params)) {
+          delete (req.params as Record<string, unknown>)[key];
+        }
+        Object.assign(req.params, parsed.params);
+      }
       return next();
     } catch (error) {
       if (error instanceof ZodError) {

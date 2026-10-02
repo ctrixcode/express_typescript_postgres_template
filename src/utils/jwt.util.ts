@@ -1,5 +1,7 @@
 import jwt, { SignOptions } from 'jsonwebtoken';
-import { v4 as uuidv4 } from 'uuid';
+// Use native crypto.randomUUID() instead of the external 'uuid' package to avoid
+// Jest CommonJS vs ESM module loader conflicts ('Must use import to load ES Module').
+import { randomUUID } from 'crypto';
 import { db } from '@/database';
 import { authSessionTokens } from '@/database/models/authSessionToken.model';
 import { UnauthorizedError } from '@/helpers';
@@ -46,7 +48,7 @@ export const generateRefreshToken = async (
   payload: Omit<TokenPayload, 'typ'>,
   userAgent: string
 ): Promise<{ refreshToken: string; jti: string }> => {
-  const jti = uuidv4();
+  const jti = randomUUID();
   const options: SignOptions = {
     expiresIn: appConfig.JWT.REFRESH_TOKEN_TIME as SignOptions['expiresIn'],
     jwtid: jti,

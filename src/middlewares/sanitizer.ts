@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from 'express';
-import type { ParsedQs } from 'qs';
 
 /**
  * Simple input sanitization middleware
@@ -15,14 +14,22 @@ export const sanitizeInput = (
     req.body = sanitizeObject(req.body);
   }
 
-  // Sanitize query parameters
-  if (req.query) {
-    req.query = sanitizeObject(req.query) as ParsedQs;
+  // In Express 5, req.query is a getter-only property on Request.prototype.
+  // Reassigning 'req.query = ...' throws 'TypeError: Cannot set property query which has only a getter'.
+  // Therefore, we must mutate the existing query object's properties in place.
+  if (req.query && typeof req.query === 'object') {
+    for (const key of Object.keys(req.query)) {
+      (req.query as Record<string, unknown>)[key] = sanitizeObject(
+        (req.query as Record<string, unknown>)[key]
+      );
+    }
   }
 
-  // Sanitize URL parameters
-  if (req.params) {
-    req.params = sanitizeObject(req.params) as Record<string, string>;
+  // Similarly, req.params in Express 5 must be mutated in place to preserve prototype bindings.
+  if (req.params && typeof req.params === 'object') {
+    for (const key of Object.keys(req.params)) {
+      req.params[key] = sanitizeObject(req.params[key]) as string;
+    }
   }
 
   next();

@@ -9,6 +9,13 @@ class ApiError extends Error {
     stack = ''
   ) {
     super(message);
+
+    // Explicitly restore prototype chain for derived Error classes.
+    // In TypeScript (ES5/CommonJS targets), extending built-in Error resets the prototype
+    // to Error.prototype, breaking 'instanceof ApiError' and 'instanceof Subclass' checks.
+    // new.target.prototype ensures the actual subclass prototype (e.g. UnauthorizedError) is linked.
+    Object.setPrototypeOf(this, new.target.prototype);
+
     this.statusCode = statusCode;
     this.isOperational = isOperational;
     if (stack) {

@@ -22,20 +22,34 @@ export const errorHandler = (
 ) => {
   let error = err;
 
-  // If the error is not an instance of ApiError, it's an unexpected server error.
-  // We convert it to a generic ApiError to handle it gracefully.
+  // Defensive check: If 'instanceof ApiError' is false (e.g. error thrown across different module
+  // boundaries or execution contexts), check if the error object carries an HTTP statusCode.
+  // This prevents valid operational errors (400, 401, 403, 404) from being mistakenly converted to 500.
   if (!(error instanceof ApiError)) {
-    logger.error('UNHANDLED_ERROR', {
-      error: err.message,
-      stack: err.stack,
-      path: req.path,
-      method: req.method,
-    });
-    error = new ApiError(
-      errorMessages.INTERNAL_SERVER_ERROR,
-      500,
-      false // This is not an operational error
-    );
+    const errorWithStatus = error as unknown as {
+      statusCode?: number;
+      isOperational?: boolean;
+    };
+    if (typeof errorWithStatus.statusCode === 'number') {
+      error = new ApiError(
+        error.message || errorMessages.INTERNAL_SERVER_ERROR,
+        errorWithStatus.statusCode,
+        errorWithStatus.isOperational ?? true,
+        error.stack
+      );
+    } else {
+      logger.error('UNHANDLED_ERROR', {
+        error: err.message,
+        stack: err.stack,
+        path: req.path,
+        method: req.method,
+      });
+      error = new ApiError(
+        errorMessages.INTERNAL_SERVER_ERROR,
+        500,
+        false // This is not an operational error
+      );
+    }
   }
 
   const { statusCode, message, isOperational, stack } = error as ApiError;
