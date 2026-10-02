@@ -1,29 +1,30 @@
 import { Example } from '@/database/models/example.model';
+import { ExampleItem } from './example.schema';
 
 /**
- * Converts an Example Drizzle object to a plain JavaScript object (DTO)
- * that is safe to send to the client.
+ * Converts an Example Drizzle database object to a strongly-typed API DTO
+ * that complies with ExampleItemSchema.
  *
- * @param example The Drizzle object to convert.
- * @returns A plain JavaScript object representing the example.
+ * @param example The Drizzle database record.
+ * @returns A strongly-typed ExampleItem DTO safe to send to the client.
  */
-export const toExampleDto = (example: Example) => {
+export const toExampleDto = (example: Example): ExampleItem => {
   return {
     id: example.id.toString(),
     name: example.name,
     description: example.description,
-    tags: example.tags,
+    tags: example.tags ?? [],
     price: example.price,
     metadata: {
-      category: example.metadata?.category,
-      priority: example.metadata?.priority,
+      category:
+        (example.metadata?.category as ExampleItem['metadata']['category']) ||
+        'other',
+      priority:
+        (example.metadata?.priority as ExampleItem['metadata']['priority']) ||
+        'medium',
       createdAt: example.metadata?.createdAt,
     },
     createdAt: example.createdAt,
     updatedAt: example.updatedAt,
   };
 };
-
-// toExample and toExampleUpdate are less relevant with Drizzle's direct insert/update
-// but keeping them if logic separation is desired, though they need to return Drizzle-friendly objects.
-// For now, removing them as the repository handles the mapping directly in the new implementation.
