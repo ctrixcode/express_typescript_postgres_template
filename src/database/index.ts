@@ -34,5 +34,13 @@ try {
   }
 }
 
+import * as schema from './models';
+
 export { client };
-export const db = drizzle(client);
+export const db = drizzle(client, { schema });
+
+export type Database = typeof db;
+export type DbTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
+export type DbExecutor = Database | DbTransaction;
+
+export * from './models';
