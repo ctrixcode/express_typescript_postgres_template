@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { logger } from '@/utils';
 import { appConfig } from '@/config';
+import { HTTP_STATUS } from '@/constants';
 import { exampleRoutes } from '@/modules/example';
 
 const router = Router();
@@ -34,7 +35,7 @@ const router = Router();
  */
 router.get('/healthz', (_, res) => {
   logger.info('Health check requested');
-  res.status(200).json({
+  res.status(HTTP_STATUS.OK).json({
     status: 'ok',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),

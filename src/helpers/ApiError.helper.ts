@@ -1,3 +1,5 @@
+import { HTTP_STATUS } from '../constants';
+
 class ApiError extends Error {
   public readonly statusCode: number;
   public readonly isOperational: boolean;
@@ -28,25 +30,43 @@ class ApiError extends Error {
 
 export class BadRequestError extends ApiError {
   constructor(message = 'Bad Request') {
-    super(message, 400);
+    super(message, HTTP_STATUS.BAD_REQUEST);
   }
 }
 
 export class UnauthorizedError extends ApiError {
   constructor(message = 'Unauthorized') {
-    super(message, 401);
+    super(message, HTTP_STATUS.UNAUTHORIZED);
   }
 }
 
 export class ForbiddenError extends ApiError {
   constructor(message = 'Forbidden') {
-    super(message, 403);
+    super(message, HTTP_STATUS.FORBIDDEN);
   }
 }
 
 export class NotFoundError extends ApiError {
   constructor(message = 'Not Found') {
-    super(message, 404);
+    super(message, HTTP_STATUS.NOT_FOUND);
+  }
+}
+
+export class ConflictError extends ApiError {
+  constructor(message = 'Conflict') {
+    super(message, HTTP_STATUS.CONFLICT);
+  }
+}
+
+export class TooManyRequestsError extends ApiError {
+  constructor(message = 'Too Many Requests') {
+    super(message, HTTP_STATUS.TOO_MANY_REQUESTS);
+  }
+}
+
+export class InternalServerError extends ApiError {
+  constructor(message = 'Internal Server Error') {
+    super(message, HTTP_STATUS.INTERNAL_SERVER_ERROR, false);
   }
 }
 

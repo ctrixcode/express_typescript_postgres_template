@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { logger } from '../utils';
 import { ApiError, NotFoundError, sendErrorResponse } from '../helpers';
-import { error as errorMessages } from '../constants/messages';
+import { HTTP_STATUS, error as errorMessages } from '../constants';
 import { appConfig } from '../config';
 
 // 404 handler - using a specific error class
@@ -46,7 +46,7 @@ export const errorHandler = (
       });
       error = new ApiError(
         errorMessages.INTERNAL_SERVER_ERROR,
-        500,
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
         false // This is not an operational error
       );
     }
@@ -56,7 +56,11 @@ export const errorHandler = (
 
   // For non-operational errors in production, we don't want to leak details.
   if (!isOperational && appConfig.APP.NODE_ENV === 'production') {
-    sendErrorResponse(res, 500, errorMessages.INTERNAL_SERVER_ERROR);
+    sendErrorResponse(
+      res,
+      HTTP_STATUS.INTERNAL_SERVER_ERROR,
+      errorMessages.INTERNAL_SERVER_ERROR
+    );
     return;
   }
 

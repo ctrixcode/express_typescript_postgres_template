@@ -7,7 +7,7 @@ import {
   GetExamplesQueryInput,
 } from './example.schema';
 import { asyncHandler, sendSuccessResponse } from '@/helpers';
-import { success as successMessages } from '@/constants/messages';
+import { HTTP_STATUS, success as successMessages } from '@/constants';
 
 /**
  * Create a new example item
@@ -22,7 +22,7 @@ export const createExample = asyncHandler(
 
     sendSuccessResponse(
       res,
-      201,
+      HTTP_STATUS.CREATED,
       successMessages.CREATED('Example'),
       exampleDto
     );
@@ -48,7 +48,7 @@ export const getExamples = asyncHandler(
 
     sendSuccessResponse(
       res,
-      200,
+      HTTP_STATUS.OK,
       successMessages.FETCHED('Examples'),
       examplesDto,
       {
@@ -72,7 +72,7 @@ export const getExampleById = asyncHandler(
 
     sendSuccessResponse(
       res,
-      200,
+      HTTP_STATUS.OK,
       successMessages.FETCHED('Example'),
       exampleDto
     );
@@ -93,7 +93,7 @@ export const updateExample = asyncHandler(
 
     sendSuccessResponse(
       res,
-      200,
+      HTTP_STATUS.OK,
       successMessages.UPDATED('Example'),
       exampleDto
     );
@@ -107,7 +107,7 @@ export const deleteExample = asyncHandler(
   async (req: Request<{ id: string }>, res: Response): Promise<void> => {
     const { id } = req.params;
     await exampleService.deleteExample(id);
-    res.status(204).send(); // No content, so no success response handler needed
+    res.status(HTTP_STATUS.NO_CONTENT).send(); // No content, so no success response handler needed
   }
 );
 
@@ -122,7 +122,7 @@ export const getExamplesByCategory = asyncHandler(
 
     sendSuccessResponse(
       res,
-      200,
+      HTTP_STATUS.OK,
       successMessages.FETCHED('Examples'),
       examplesDto
     );
@@ -140,7 +140,7 @@ export const searchExamples = asyncHandler(
 
     sendSuccessResponse(
       res,
-      200,
+      HTTP_STATUS.OK,
       successMessages.FETCHED('Examples'),
       examplesDto
     );

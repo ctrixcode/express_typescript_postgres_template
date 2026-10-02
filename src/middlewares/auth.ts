@@ -3,7 +3,11 @@ import { eq } from 'drizzle-orm';
 import { verifyAccessToken, TokenPayload } from '@/utils/jwt.util';
 import { db } from '@/database';
 import { users, SafeUser } from '@/database/models/user.model';
-import { UnauthorizedError, ForbiddenError, ApiError } from '@/helpers';
+import {
+  UnauthorizedError,
+  ForbiddenError,
+  InternalServerError,
+} from '@/helpers';
 import { error as errorMessages } from '@/constants/messages';
 import { logger } from '@/utils';
 import { appConfig } from '@/config';
@@ -106,7 +110,7 @@ export const authenticateToken = async (
       return next();
     }
     logger.error('Database error verifying user in auth middleware:', dbErr);
-    return next(new ApiError(errorMessages.INTERNAL_SERVER_ERROR, 500));
+    return next(new InternalServerError(errorMessages.INTERNAL_SERVER_ERROR));
   }
 };
 

@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { z, ZodError } from 'zod';
 import { logger } from '../utils';
 import { appConfig } from '../config'; // Import appConfig
+import { HTTP_STATUS } from '../constants';
 
 export const validate =
   (schema: z.Schema) =>
@@ -45,11 +46,13 @@ export const validate =
         if (appConfig.APP.NODE_ENV !== 'test') {
           logger.error('Zod validation error', { errors: errorMessages });
         }
-        return res.status(400).json({ success: false, errors: errorMessages });
+        return res
+          .status(HTTP_STATUS.BAD_REQUEST)
+          .json({ success: false, errors: errorMessages });
       }
       logger.error('Internal server error in validation middleware', { error });
       return res
-        .status(500)
+        .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
         .json({ success: false, message: 'Internal Server Error' });
     }
   };

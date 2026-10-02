@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { HTTP_STATUS } from '../constants';
 
 /**
  * Simple input sanitization middleware
@@ -123,7 +124,7 @@ export const sqlInjectionProtection = (
     checkForSQLInjection(req.query) ||
     checkForSQLInjection(req.params)
   ) {
-    return res.status(400).json({
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({
       success: false,
       message: 'Potentially harmful content detected',
     });
@@ -162,7 +163,7 @@ export const createRateLimit = (
     }
 
     if (userRequests.count >= max) {
-      return res.status(429).json({
+      return res.status(HTTP_STATUS.TOO_MANY_REQUESTS).json({
         success: false,
         message: 'Too many requests, please try again later',
       });
