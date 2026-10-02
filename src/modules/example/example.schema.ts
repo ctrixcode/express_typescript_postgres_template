@@ -60,63 +60,120 @@ import { z } from 'zod';
  *         updatedAt: "2023-01-01T12:00:00.000Z"
  */
 
-export const createExampleSchema = z.object({
-  body: z.object({
-    name: z.string().min(2).max(100),
-    description: z.string().min(1).max(500),
-    tags: z.array(z.string()).max(10).optional(),
-    price: z.number().min(0).max(10000),
-    metadata: z.object({
-      category: z.enum(['electronics', 'clothing', 'books', 'food', 'other']),
-      priority: z.enum(['low', 'medium', 'high']).optional(),
+// ==========================================
+// 1. Primitive & Shared Sub-Schemas
+// ==========================================
+
+export const ExampleCategorySchema = z.enum([
+  'electronics',
+  'clothing',
+  'books',
+  'food',
+  'other',
+]);
+export type ExampleCategory = z.infer<typeof ExampleCategorySchema>;
+
+export const ExamplePrioritySchema = z.enum(['low', 'medium', 'high']);
+export type ExamplePriority = z.infer<typeof ExamplePrioritySchema>;
+
+export const ExampleMetadataSchema = z.object({
+  category: ExampleCategorySchema,
+  priority: ExamplePrioritySchema.default('medium'),
+  createdAt: z.string().optional(),
+});
+export type ExampleMetadata = z.infer<typeof ExampleMetadataSchema>;
+
+// ==========================================
+// 2. Domain / Entity Schemas (Response DTOs)
+// ==========================================
+
+export const ExampleItemSchema = z.object({
+  id: z.string(),
+  name: z.string().min(2).max(100),
+  description: z.string().min(1).max(500),
+  tags: z.array(z.string()).default([]),
+  price: z.number().min(0).max(10000),
+  metadata: ExampleMetadataSchema,
+  createdAt: z.date().or(z.string()).nullable(),
+  updatedAt: z.date().or(z.string()).nullable(),
+});
+export type ExampleItem = z.infer<typeof ExampleItemSchema>;
+
+// ==========================================
+// 3. Request Body & Query Schemas
+// ==========================================
+
+export const CreateExampleBodySchema = z.object({
+  name: z.string().min(2).max(100),
+  description: z.string().min(1).max(500),
+  tags: z.array(z.string()).max(10).optional(),
+  price: z.number().min(0).max(10000),
+  metadata: z.object({
+    category: ExampleCategorySchema,
+    priority: ExamplePrioritySchema.optional(),
+  }),
+});
+export type CreateExampleInput = z.infer<typeof CreateExampleBodySchema>;
+
+export const UpdateExampleBodySchema = z.object({
+  name: z.string().min(2).max(100).optional(),
+  description: z.string().min(1).max(500).optional(),
+  tags: z.array(z.string()).max(10).optional(),
+  price: z.number().min(0).max(10000).optional(),
+  metadata: z
+    .object({
+      category: ExampleCategorySchema.optional(),
+      priority: ExamplePrioritySchema.optional(),
+    })
+    .optional(),
+});
+export type UpdateExampleInput = z.infer<typeof UpdateExampleBodySchema>;
+
+export const GetExamplesQuerySchema = z.object({
+  page: z
+    .string()
+    .optional()
+    .transform(val => {
+      const parsed = val ? parseInt(val, 10) : 1;
+      return isNaN(parsed) || parsed < 1 ? 1 : parsed;
     }),
-  }),
+  limit: z
+    .string()
+    .optional()
+    .transform(val => {
+      const parsed = val ? parseInt(val, 10) : 10;
+      return isNaN(parsed) || parsed < 1 ? 10 : Math.min(parsed, 100);
+    }),
+  category: z.string().optional(),
+  isDeleted: z
+    .enum(['true', 'false'])
+    .optional()
+    .transform(val =>
+      val === 'true' ? true : val === 'false' ? false : undefined
+    ),
 });
+export type GetExamplesQueryInput = z.infer<typeof GetExamplesQuerySchema>;
 
-export const updateExampleSchema = z.object({
-  body: z.object({
-    name: z.string().min(2).max(100).optional(),
-    description: z.string().min(1).max(500).optional(),
-    tags: z.array(z.string()).max(10).optional(),
-    price: z.number().min(0).max(10000).optional(),
-    metadata: z
-      .object({
-        category: z
-          .enum(['electronics', 'clothing', 'books', 'food', 'other'])
-          .optional(),
-        priority: z.enum(['low', 'medium', 'high']).optional(),
-      })
-      .optional(),
-  }),
+// ==========================================
+// 4. Express Route Validation Schemas
+// ==========================================
+
+export const CreateExampleRouteSchema = z.object({
+  body: CreateExampleBodySchema,
 });
+export type CreateExampleRoute = z.infer<typeof CreateExampleRouteSchema>;
 
-export type CreateExampleInput = z.infer<typeof createExampleSchema>['body'];
-export type UpdateExampleInput = z.infer<typeof updateExampleSchema>['body'];
-
-export const getExamplesSchema = z.object({
-  query: z.object({
-    page: z
-      .string()
-      .optional()
-      .transform(val => {
-        const parsed = val ? parseInt(val, 10) : 1;
-        return isNaN(parsed) || parsed < 1 ? 1 : parsed;
-      }),
-    limit: z
-      .string()
-      .optional()
-      .transform(val => {
-        const parsed = val ? parseInt(val, 10) : 10;
-        return isNaN(parsed) || parsed < 1 ? 10 : Math.min(parsed, 100);
-      }),
-    category: z.string().optional(),
-    isDeleted: z
-      .enum(['true', 'false'])
-      .optional()
-      .transform(val =>
-        val === 'true' ? true : val === 'false' ? false : undefined
-      ),
-  }),
+export const UpdateExampleRouteSchema = z.object({
+  body: UpdateExampleBodySchema,
 });
+export type UpdateExampleRoute = z.infer<typeof UpdateExampleRouteSchema>;
 
-export type GetExamplesQueryInput = z.infer<typeof getExamplesSchema>['query'];
+export const GetExamplesRouteSchema = z.object({
+  query: GetExamplesQuerySchema,
+});
+export type GetExamplesRoute = z.infer<typeof GetExamplesRouteSchema>;
+
+// Legacy / Convenience Aliases
+export const createExampleSchema = CreateExampleRouteSchema;
+export const updateExampleSchema = UpdateExampleRouteSchema;
+export const getExamplesSchema = GetExamplesRouteSchema;

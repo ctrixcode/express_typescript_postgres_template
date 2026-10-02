@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { logger } from '@/utils';
 import { appConfig } from '@/config';
-import exampleRoutes from '@/modules/example/example.routes';
+import { exampleRoutes } from '@/modules/example';
 
 const router = Router();
 
