@@ -20,8 +20,8 @@ export const examples = pgTable('examples', {
     priority: 'low' | 'medium' | 'high';
     createdAt: string;
   }>(),
-  createdAt: timestamp('created_at').defaultNow(),
-  updatedAt: timestamp('updated_at').defaultNow(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });
 
 export type Example = typeof examples.$inferSelect;

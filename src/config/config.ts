@@ -30,6 +30,14 @@ const dbHost = process.env.DB_HOST || 'localhost';
 const dbPort = process.env.DB_PORT || '5432';
 const dbName = process.env.DB_NAME || 'express_ts_db';
 
+const dbUrl =
+  process.env.DATABASE_URL ||
+  `postgres://${encodeURIComponent(dbUser)}:${encodeURIComponent(dbPassword)}@${dbHost}:${dbPort}/${dbName}`;
+
+const dbSystemUrl =
+  process.env.DATABASE_SYSTEM_URL ||
+  `postgres://${encodeURIComponent(dbUser)}:${encodeURIComponent(dbPassword)}@${dbHost}:${dbPort}/postgres`;
+
 const config = {
   APP: {
     PORT: process.env.PORT ? parseInt(process.env.PORT, 10) : 4000,
@@ -56,16 +64,20 @@ const config = {
     HOST: dbHost,
     PORT: dbPort,
     NAME: dbName,
-    SSL: process.env.DB_SSL === 'true' || isProduction,
-    URL: `postgres://${dbUser}:${dbPassword}@${dbHost}:${dbPort}/${dbName}`,
-    SYSTEM_URL: `postgres://${dbUser}:${dbPassword}@${dbHost}:${dbPort}/postgres`,
+    SSL:
+      process.env.DB_SSL !== undefined
+        ? process.env.DB_SSL === 'true'
+        : isProduction,
+    URL: dbUrl,
+    SYSTEM_URL: dbSystemUrl,
   },
 };
 
-// Security Validations
-if (config.APP.ENCRYPTION_KEY.length !== 32) {
+// Security Validations: Key must be 32 bytes (256-bit)
+const encryptionKeyBuf = Buffer.from(config.APP.ENCRYPTION_KEY, 'utf-8');
+if (encryptionKeyBuf.length !== 32) {
   console.error(
-    'CRITICAL SECURITY ERROR: ENCRYPTION_KEY must be a 32-character string. Please set it in your .env file.'
+    'CRITICAL SECURITY ERROR: ENCRYPTION_KEY must be exactly 32 bytes (256-bit). Please set a 32-character string in your .env file.'
   );
   process.exit(1);
 }

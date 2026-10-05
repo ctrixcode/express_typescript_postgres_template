@@ -1,4 +1,4 @@
-import { eq, and, desc, sql, like, or } from 'drizzle-orm';
+import { eq, and, desc, sql, ilike, or } from 'drizzle-orm';
 import { db, DbExecutor } from '@/database';
 import { examples, NewExample } from '@/database/models/example.model';
 import { logger } from '@/utils';
@@ -21,7 +21,7 @@ export const create = async (
       tags: exampleData.tags,
       metadata: {
         category: exampleData.metadata.category,
-        priority: exampleData.metadata.priority || 'medium', // Default to medium if undefined
+        priority: exampleData.metadata.priority || 'medium',
         createdAt: new Date().toISOString(),
       },
     };
@@ -42,7 +42,7 @@ export const find = async (
   page: number = 1,
   limit: number = 10,
   category?: string,
-  isDeleted?: boolean,
+  isDeleted: boolean = false,
   executor: DbExecutor = db
 ): Promise<{
   examples: (typeof examples.$inferSelect)[];
@@ -53,13 +53,11 @@ export const find = async (
 
     const conditions = [];
     if (category) {
-      // JSONB query for category
       conditions.push(sql`${examples.metadata}->>'category' = ${category}`);
     }
-    if (isDeleted !== undefined)
-      conditions.push(eq(examples.isDeleted, isDeleted));
+    conditions.push(eq(examples.isDeleted, isDeleted));
 
-    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+    const whereClause = and(...conditions);
 
     const [resultExamples, totalResult] = await Promise.all([
       executor
@@ -86,15 +84,23 @@ export const find = async (
 
 export const findById = async (
   exampleId: string,
+  includeDeleted: boolean = false,
   executor: DbExecutor = db
 ): Promise<typeof examples.$inferSelect | null> => {
   try {
     const id = parseInt(exampleId, 10);
     if (isNaN(id)) return null;
 
-    const example = await executor.query.examples.findFirst({
-      where: eq(examples.id, id),
-    });
+    const conditions = [eq(examples.id, id)];
+    if (!includeDeleted) {
+      conditions.push(eq(examples.isDeleted, false));
+    }
+
+    const [example] = await executor
+      .select()
+      .from(examples)
+      .where(and(...conditions))
+      .limit(1);
 
     return example || null;
   } catch (error) {
@@ -112,21 +118,17 @@ export const update = async (
     const id = parseInt(exampleId, 10);
     if (isNaN(id)) return null;
 
-    // Construct update object - handling partial updates might need more logic depending on requirements
-    // For now, assuming we map fields directly.
     const updateValues: Partial<NewExample> = {};
-    if (updateData.name) updateValues.name = updateData.name;
-    if (updateData.description)
+    if (updateData.name !== undefined) updateValues.name = updateData.name;
+    if (updateData.description !== undefined)
       updateValues.description = updateData.description;
-    if (updateData.price) updateValues.price = updateData.price;
-    if (updateData.tags) updateValues.tags = updateData.tags;
-    // Metadata update is tricky with partials in JSONB, might need to fetch and merge or use specific JSONB operators.
-    // Simulating a merge for metadata if provided
-    if (updateData.metadata) {
+    if (updateData.price !== undefined) updateValues.price = updateData.price;
+    if (updateData.tags !== undefined) updateValues.tags = updateData.tags;
+    if (updateData.metadata !== undefined) {
       updateValues.metadata = {
-        category: updateData.metadata.category || 'other', // Default or handle undefined
+        category: updateData.metadata.category || 'other',
         priority: updateData.metadata.priority || 'medium',
-        createdAt: new Date().toISOString(), // Or keep original?
+        createdAt: new Date().toISOString(),
       };
     }
     updateValues.updatedAt = new Date();
@@ -134,7 +136,7 @@ export const update = async (
     const [example] = await executor
       .update(examples)
       .set(updateValues)
-      .where(eq(examples.id, id))
+      .where(and(eq(examples.id, id), eq(examples.isDeleted, false)))
       .returning();
 
     if (!example) {
@@ -158,15 +160,11 @@ export const softDelete = async (
 
     const [example] = await executor
       .update(examples)
-      .set({ isDeleted: true })
-      .where(eq(examples.id, id))
+      .set({ isDeleted: true, updatedAt: new Date() })
+      .where(and(eq(examples.id, id), eq(examples.isDeleted, false)))
       .returning();
 
-    if (!example) {
-      return false;
-    }
-
-    return true;
+    return !!example;
   } catch (error) {
     logger.error('Error deleting example item in repository:', error);
     throw error;
@@ -187,6 +185,7 @@ export const findByCategory = async (
           eq(examples.isDeleted, false)
         )
       )
+      .limit(100)
       .orderBy(desc(examples.createdAt));
 
     return resultExamples;
@@ -200,23 +199,28 @@ export const findByCategory = async (
 };
 
 export const search = async (
-  searchTerm: string,
+  searchTerm: string = '',
+  limit: number = 50,
   executor: DbExecutor = db
 ): Promise<(typeof examples.$inferSelect)[]> => {
   try {
-    const safeTerm = searchTerm.replace(/[%_\\]/g, '\\$&');
+    if (!searchTerm || !searchTerm.trim()) {
+      return [];
+    }
+    const safeTerm = searchTerm.trim().replace(/[%_\\]/g, '\\$&');
     const resultExamples = await executor
       .select()
       .from(examples)
       .where(
         and(
           or(
-            like(examples.name, `%${safeTerm}%`),
-            like(examples.description, `%${safeTerm}%`)
+            ilike(examples.name, `%${safeTerm}%`),
+            ilike(examples.description, `%${safeTerm}%`)
           ),
           eq(examples.isDeleted, false)
         )
       )
+      .limit(limit)
       .orderBy(desc(examples.createdAt));
 
     return resultExamples;

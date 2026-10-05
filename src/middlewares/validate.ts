@@ -39,16 +39,23 @@ export const validate =
       return next();
     } catch (error) {
       if (error instanceof ZodError) {
-        const errorMessages = error.issues.map(issue => ({
-          message: `${issue.path.join('.')} is ${issue.message.toLowerCase()}`,
-        }));
+        const errorMessages = error.issues.map(issue => {
+          const path = issue.path.join('.');
+          return {
+            message: path ? `${path}: ${issue.message}` : issue.message,
+          };
+        });
         // Only log Zod errors if not in test environment
         if (appConfig.APP.NODE_ENV !== 'test') {
-          logger.error('Zod validation error', { errors: errorMessages });
+          logger.warn('Zod validation error', { errors: errorMessages });
         }
-        return res
-          .status(HTTP_STATUS.BAD_REQUEST)
-          .json({ success: false, errors: errorMessages });
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          success: false,
+          message: 'Validation failed',
+          code: 'VALIDATION_ERROR',
+          details: errorMessages,
+          errors: errorMessages,
+        });
       }
       logger.error('Internal server error in validation middleware', { error });
       return res

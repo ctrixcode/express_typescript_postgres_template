@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { eq } from 'drizzle-orm';
 import { verifyAccessToken, TokenPayload } from '@/utils/jwt.util';
 import { db } from '@/database';
-import { users, SafeUser } from '@/database/models/user.model';
+import { users } from '@/database/models/user.model';
 import {
   UnauthorizedError,
   ForbiddenError,
@@ -11,16 +11,6 @@ import {
 import { error as errorMessages } from '@/constants/messages';
 import { logger } from '@/utils';
 import { appConfig } from '@/config';
-
-declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
-  namespace Express {
-    interface Request {
-      user?: TokenPayload;
-      dbUser?: SafeUser;
-    }
-  }
-}
 
 /**
  * Middleware to authenticate requests using a JWT Bearer access token.

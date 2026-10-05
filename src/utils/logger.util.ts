@@ -21,7 +21,7 @@ const colors = {
 
 winston.addColors(colors);
 
-// Formatter to redact sensitive fields (passwords, tokens, secrets) in logs while preserving Winston symbols
+// Formatter to redact sensitive fields (passwords, tokens, secrets) in logs safely
 const maskSensitiveData = winston.format(info => {
   const sensitiveKeys = [
     'password',
@@ -31,22 +31,38 @@ const maskSensitiveData = winston.format(info => {
     'cookie',
   ];
 
-  const maskObject = (obj: unknown): unknown => {
-    if (!obj || typeof obj !== 'object') return obj;
-    if (Array.isArray(obj)) return obj.map(maskObject);
+  const seen = new WeakSet();
 
-    const target = obj as Record<string, unknown>;
-    for (const key of Object.keys(target)) {
+  const mask = (obj: unknown): unknown => {
+    if (!obj || typeof obj !== 'object') return obj;
+    if (seen.has(obj)) return '[CIRCULAR]';
+    seen.add(obj);
+
+    if (Array.isArray(obj)) {
+      return obj.map(item => mask(item));
+    }
+
+    const target: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj)) {
       if (sensitiveKeys.some(s => key.toLowerCase().includes(s))) {
         target[key] = '[REDACTED]';
-      } else if (typeof target[key] === 'object' && target[key] !== null) {
-        maskObject(target[key]);
+      } else if (typeof value === 'object' && value !== null) {
+        target[key] = mask(value);
+      } else {
+        target[key] = value;
       }
     }
     return target;
   };
 
-  maskObject(info);
+  for (const key of Object.keys(info)) {
+    if (sensitiveKeys.some(s => key.toLowerCase().includes(s))) {
+      info[key] = '[REDACTED]';
+    } else if (typeof info[key] === 'object' && info[key] !== null) {
+      info[key] = mask(info[key]);
+    }
+  }
+
   return info;
 });
 
@@ -64,9 +80,15 @@ const transports = [
       maskSensitiveData(),
       winston.format.timestamp({ format: 'HH:mm:ss' }),
       winston.format.colorize({ all: true }),
-      winston.format.printf(
-        info => `${info.timestamp} ${info.level}: ${info.message}`
-      )
+      winston.format.printf(info => {
+        const { timestamp, level, message, stack, ...rest } = info;
+        const metaKeys = Object.keys(rest).filter(
+          k => typeof k === 'string' && typeof rest[k] !== 'symbol'
+        );
+        const metaStr = metaKeys.length ? ` ${JSON.stringify(rest)}` : '';
+        const stackStr = stack ? `\n${stack}` : '';
+        return `${timestamp} ${level}: ${message}${metaStr}${stackStr}`;
+      })
     ),
   }),
 

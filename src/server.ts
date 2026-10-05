@@ -2,17 +2,28 @@ import { Server } from 'http';
 import app from './app';
 import { logger } from './utils';
 import { appConfig } from './config';
-// import { client } from './database'; // Import client if you need to close it explicitly, though often not strictly necessary for simple apps
+import { client } from './database';
 
 const PORT = appConfig.APP.PORT;
 
-let server: Server; // Declare server variable to hold the http.Server instance
+let server: Server | undefined;
 
 (async () => {
   try {
-    // Database connection is handled lazily by Drizzle/Postgres.js,
-    // but you could add a check here if desired.
     logger.info('Initializing server...');
+
+    // Verify database connectivity on startup
+    if (client) {
+      try {
+        await client`SELECT 1`;
+        logger.info('✅ Database connection established.');
+      } catch (dbError) {
+        logger.warn(
+          '⚠️ Database connection could not be established on startup:',
+          dbError
+        );
+      }
+    }
 
     server = app.listen(PORT, () => {
       logger.info(`🚀 Server is running on port ${PORT}`);
@@ -32,33 +43,58 @@ let server: Server; // Declare server variable to hold the http.Server instance
   }
 })();
 
+let isShuttingDown = false;
+
 // Function to handle graceful shutdown
 const gracefulShutdown = async (signal: string) => {
+  if (isShuttingDown) return;
+  isShuttingDown = true;
+
   logger.info(`Received ${signal}. Initiating graceful shutdown...`);
 
-  // Close the HTTP server
-  server.close(async (err?: Error) => {
-    if (err) {
-      logger.error('Error closing HTTP server:', err);
-      process.exit(1);
-    }
-    logger.info('HTTP server closed.');
+  // Force close if server hasn't exited within 10 seconds
+  const forceExitTimer = setTimeout(() => {
+    logger.error('Forcing shutdown after 10s timeout.');
+    process.exit(1);
+  }, 10000);
+  forceExitTimer.unref();
 
-    // Close Database connection if needed
-    // await client.end();
-    // logger.info('Database connection closed.');
+  try {
+    if (server) {
+      await new Promise<void>((resolve, reject) => {
+        server?.close(err => {
+          if (err) return reject(err);
+          logger.info('HTTP server closed.');
+          resolve();
+        });
+      });
+    }
+
+    if (client) {
+      await client.end({ timeout: 5 });
+      logger.info('Database connection pool closed.');
+    }
 
     logger.info('Application gracefully shut down.');
     process.exit(0);
-  });
-
-  // Force close if server hasn't exited within a timeout
-  setTimeout(() => {
-    logger.error('Forcing shutdown after timeout.');
+  } catch (err) {
+    logger.error('Error during graceful shutdown:', err);
     process.exit(1);
-  }, 10000); // 10 seconds timeout
+  }
 };
 
-// Listen for termination signals
+// Process-level event listeners
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+process.on('uncaughtException', error => {
+  logger.error('UNCAUGHT_EXCEPTION: The process will shut down', error);
+  gracefulShutdown('uncaughtException');
+});
+
+process.on('unhandledRejection', reason => {
+  logger.error('UNHANDLED_REJECTION: An unhandled promise was rejected', {
+    reason,
+  });
+  gracefulShutdown('unhandledRejection');
+});

@@ -8,6 +8,8 @@ import {
   getExamplesSchema,
   getExampleByIdSchema,
   deleteExampleSchema,
+  searchExamplesSchema,
+  getExamplesByCategorySchema,
 } from './example.schema';
 
 const router = Router();
@@ -93,6 +95,60 @@ router.get(
   '/',
   validate(getExamplesSchema),
   exampleController.getExamplesHandler
+);
+
+/**
+ * @swagger
+ * /examples/search:
+ *   get:
+ *     summary: Search examples by name or description
+ *     tags: [Examples]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The search term
+ *     responses:
+ *       200:
+ *         description: List of matched examples
+ *       401:
+ *         description: Unauthorized
+ */
+router.get(
+  '/search',
+  validate(searchExamplesSchema),
+  exampleController.searchExamplesHandler
+);
+
+/**
+ * @swagger
+ * /examples/category/{category}:
+ *   get:
+ *     summary: Get examples by category
+ *     tags: [Examples]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: category
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Category name
+ *     responses:
+ *       200:
+ *         description: List of examples in category
+ *       401:
+ *         description: Unauthorized
+ */
+router.get(
+  '/category/:category',
+  validate(getExamplesByCategorySchema),
+  exampleController.getExamplesByCategoryHandler
 );
 
 /**

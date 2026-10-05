@@ -197,9 +197,27 @@ export type UpdateExampleRoute = z.infer<typeof UpdateExampleRouteSchema>;
 export const DeleteExampleRouteSchema = ExampleIdParamSchema;
 export type DeleteExampleRoute = z.infer<typeof DeleteExampleRouteSchema>;
 
+export const SearchExamplesRouteSchema = z.object({
+  query: z.object({
+    q: z.string().min(1, 'Search term q is required'),
+  }),
+});
+export type SearchExamplesRoute = z.infer<typeof SearchExamplesRouteSchema>;
+
+export const GetExamplesByCategoryRouteSchema = z.object({
+  params: z.object({
+    category: z.string().min(1, 'Category is required'),
+  }),
+});
+export type GetExamplesByCategoryRoute = z.infer<
+  typeof GetExamplesByCategoryRouteSchema
+>;
+
 // Legacy / Convenience Aliases
 export const createExampleSchema = CreateExampleRouteSchema;
 export const updateExampleSchema = UpdateExampleRouteSchema;
 export const getExamplesSchema = GetExamplesRouteSchema;
 export const getExampleByIdSchema = GetExampleByIdRouteSchema;
 export const deleteExampleSchema = DeleteExampleRouteSchema;
+export const searchExamplesSchema = SearchExamplesRouteSchema;
+export const getExamplesByCategorySchema = GetExamplesByCategoryRouteSchema;

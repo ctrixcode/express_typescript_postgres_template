@@ -2,23 +2,13 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { appConfig } from '@/config';
 import { logger } from '@/utils';
+import * as schema from './models';
 
 const connectionString = appConfig.DB.URL;
 
-let client!: postgres.Sql;
+let client: postgres.Sql;
 
 try {
-  if (
-    (!process.env.DB_USERNAME && appConfig.APP.NODE_ENV !== 'test') ||
-    (!process.env.DB_NAME && appConfig.APP.NODE_ENV !== 'test') ||
-    (connectionString.includes('undefined') &&
-      appConfig.APP.NODE_ENV !== 'test')
-  ) {
-    throw new Error(
-      'Database credentials are not configured in environment variables.'
-    );
-  }
-
   // Postgres client with SSL support and managed pool timeouts
   client = postgres(connectionString, {
     prepare: false, // Transaction pool mode compatible
@@ -32,9 +22,9 @@ try {
   if (appConfig.APP.NODE_ENV !== 'test') {
     process.exit(1);
   }
+  // Safe mock client so module imports do not crash during isolated tests
+  client = postgres('postgres://localhost:5432/test_fallback', { max: 1 });
 }
-
-import * as schema from './models';
 
 export { client };
 export const db = drizzle(client, { schema });
