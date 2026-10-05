@@ -38,6 +38,10 @@ export const create = async (
   }
 };
 
+/**
+ * Retrieve paginated examples with optional category filter.
+ * Defaults to `isDeleted = false` to prevent soft-deleted records from leaking into user queries.
+ */
 export const find = async (
   page: number = 1,
   limit: number = 10,
@@ -55,6 +59,7 @@ export const find = async (
     if (category) {
       conditions.push(sql`${examples.metadata}->>'category' = ${category}`);
     }
+    // Filter out soft-deleted items by default
     conditions.push(eq(examples.isDeleted, isDeleted));
 
     const whereClause = and(...conditions);
@@ -82,6 +87,10 @@ export const find = async (
   }
 };
 
+/**
+ * Retrieve a single example item by its ID.
+ * Defaults to filtering out soft-deleted items unless explicitly requested.
+ */
 export const findById = async (
   exampleId: string,
   includeDeleted: boolean = false,
@@ -109,6 +118,13 @@ export const findById = async (
   }
 };
 
+/**
+ * Updates an existing example item.
+ *
+ * NOTE: We check `!== undefined` rather than using truthy checks (`if (updateData.price)`).
+ * In JavaScript, `0` is falsy. Checking truthiness would silently ignore updates
+ * where the user sets `price: 0` (e.g. marking an item free).
+ */
 export const update = async (
   exampleId: string,
   updateData: UpdateExampleInput,
@@ -122,6 +138,7 @@ export const update = async (
     if (updateData.name !== undefined) updateValues.name = updateData.name;
     if (updateData.description !== undefined)
       updateValues.description = updateData.description;
+    // Check !== undefined so numeric 0 is properly applied
     if (updateData.price !== undefined) updateValues.price = updateData.price;
     if (updateData.tags !== undefined) updateValues.tags = updateData.tags;
     if (updateData.metadata !== undefined) {
@@ -198,6 +215,16 @@ export const findByCategory = async (
   }
 };
 
+/**
+ * Case-insensitive search across name and description fields.
+ *
+ * Key details:
+ * 1. `ilike` vs `like`: In PostgreSQL, `like` is strictly case-sensitive. `ilike` provides
+ *    case-insensitive matching ("phone" matches "iPhone").
+ * 2. Wildcard Escaping: Characters `%`, `_`, and `\` have special meaning in SQL LIKE queries.
+ *    Escaping them prevents users from crafting wildcard queries that scan the entire table.
+ * 3. Enforced Limit: Capped to 50 items to protect memory and prevent event-loop starvation.
+ */
 export const search = async (
   searchTerm: string = '',
   limit: number = 50,
@@ -207,6 +234,7 @@ export const search = async (
     if (!searchTerm || !searchTerm.trim()) {
       return [];
     }
+    // Escape SQL LIKE wildcards so user input is treated as literal search text
     const safeTerm = searchTerm.trim().replace(/[%_\\]/g, '\\$&');
     const resultExamples = await executor
       .select()

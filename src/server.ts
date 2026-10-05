@@ -43,16 +43,27 @@ let server: Server | undefined;
   }
 })();
 
+// Guard flag to ensure shutdown sequence executes exactly once
 let isShuttingDown = false;
 
-// Function to handle graceful shutdown
+/**
+ * Handles graceful termination of the application upon receiving OS signals
+ * or fatal process errors (SIGTERM, SIGINT, uncaughtException).
+ *
+ * Steps:
+ * 1. Stops the HTTP server from accepting new incoming requests (`server.close()`).
+ * 2. Allows existing in-flight HTTP requests to finish.
+ * 3. Gracefully closes the PostgreSQL connection pool (`client.end()`).
+ * 4. Safety net: Sets a 10-second force-kill timer via `setTimeout(..., 10000).unref()`.
+ *    `.unref()` ensures this safety timer does NOT keep the event loop alive if everything drains early.
+ */
 const gracefulShutdown = async (signal: string) => {
   if (isShuttingDown) return;
   isShuttingDown = true;
 
   logger.info(`Received ${signal}. Initiating graceful shutdown...`);
 
-  // Force close if server hasn't exited within 10 seconds
+  // Force kill the process if graceful draining hangs longer than 10 seconds
   const forceExitTimer = setTimeout(() => {
     logger.error('Forcing shutdown after 10s timeout.');
     process.exit(1);
@@ -60,6 +71,7 @@ const gracefulShutdown = async (signal: string) => {
   forceExitTimer.unref();
 
   try {
+    // Step 1 & 2: Close HTTP server and wait for active requests to finish
     if (server) {
       await new Promise<void>((resolve, reject) => {
         server?.close(err => {
@@ -70,6 +82,7 @@ const gracefulShutdown = async (signal: string) => {
       });
     }
 
+    // Step 3: Drain PostgreSQL connection pool safely
     if (client) {
       await client.end({ timeout: 5 });
       logger.info('Database connection pool closed.');

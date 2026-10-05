@@ -21,7 +21,19 @@ const colors = {
 
 winston.addColors(colors);
 
-// Formatter to redact sensitive fields (passwords, tokens, secrets) in logs safely
+/**
+ * Winston Formatter: Redacts sensitive fields (passwords, JWTs, API tokens, cookies)
+ * before logs are written to disk or terminal.
+ *
+ * Key Design Considerations:
+ * 1. Circular Reference Guard (`WeakSet`):
+ *    Complex objects (like Express `req` or nested database errors) frequently contain
+ *    circular references (`a.b = a`). Without tracking visited objects, recursive traversal
+ *    causes a fatal `RangeError: Maximum call stack size exceeded` and crashes the process.
+ * 2. Immutability:
+ *    Instead of mutating the caller's objects in-place (which would alter runtime variables),
+ *    this creates a shallow clone (`target`) with redacted fields.
+ */
 const maskSensitiveData = winston.format(info => {
   const sensitiveKeys = [
     'password',
@@ -31,10 +43,13 @@ const maskSensitiveData = winston.format(info => {
     'cookie',
   ];
 
+  // Tracks already-visited objects to break circular dependency loops
   const seen = new WeakSet();
 
   const mask = (obj: unknown): unknown => {
     if (!obj || typeof obj !== 'object') return obj;
+
+    // Detect and break circular references
     if (seen.has(obj)) return '[CIRCULAR]';
     seen.add(obj);
 
@@ -42,6 +57,7 @@ const maskSensitiveData = winston.format(info => {
       return obj.map(item => mask(item));
     }
 
+    // Build a clean, redacted clone rather than modifying the original in-memory object
     const target: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(obj)) {
       if (sensitiveKeys.some(s => key.toLowerCase().includes(s))) {
@@ -55,6 +71,7 @@ const maskSensitiveData = winston.format(info => {
     return target;
   };
 
+  // Redact properties directly attached to the Winston info log record
   for (const key of Object.keys(info)) {
     if (sensitiveKeys.some(s => key.toLowerCase().includes(s))) {
       info[key] = '[REDACTED]';
